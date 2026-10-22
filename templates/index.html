@@ -1,0 +1,460 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Genba Safety - PT. FUJISEAT INDONESIA{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-3">
+
+    <!-- KPI Summary Row -->
+    <div class="row g-2">
+        <div class="col-6 col-md-3">
+            <div class="card-kpi d-flex align-items-center justify-content-between shadow-sm">
+                <div>
+                    <div class="kpi-label">Total Temuan</div>
+                    <div class="kpi-value">{{ stats.total }}</div>
+                    <small class="text-muted" style="font-size: 0.6875rem;">
+                        {% if period_type == 'month' %}Periode Bulan: {{ period_val }}
+                        {% elif period_type == 'week' %}Periode: Mingguan
+                        {% elif period_type == 'year' %}Tahun: {{ period_val }}
+                        {% else %}Semua Periode{% endif %}
+                    </small>
+                </div>
+                <div class="p-2 bg-light rounded text-secondary border">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card-kpi d-flex align-items-center justify-content-between shadow-sm" style="border-left: 3px solid #dc2626;">
+                <div>
+                    <div class="kpi-label text-danger" style="color: #991b1b !important;">Belum Diperbaiki (X)</div>
+                    <div class="kpi-value" style="color: #991b1b;">{{ stats.on_progress }}</div>
+                    <small class="text-muted" style="font-size: 0.6875rem;">Status Judg: X</small>
+                </div>
+                <div class="p-2 bg-danger-subtle rounded text-danger border border-danger-subtle">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card-kpi d-flex align-items-center justify-content-between shadow-sm" style="border-left: 3px solid #16a34a;">
+                <div>
+                    <div class="kpi-label text-success" style="color: #15803d !important;">Selesai Diperbaiki (O)</div>
+                    <div class="kpi-value" style="color: #15803d;">{{ stats.ok }}</div>
+                    <small class="text-muted" style="font-size: 0.6875rem;">Status Judg: O</small>
+                </div>
+                <div class="p-2 bg-success-subtle rounded text-success border border-success-subtle">
+                    <svg width="22" height="22" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-6 col-md-3">
+            <div class="card-kpi d-flex flex-column justify-content-between shadow-sm">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="kpi-label">Tingkat Perbaikan</div>
+                    <span class="badge bg-primary" style="font-size: 0.7rem;">{{ pct_closed }}%</span>
+                </div>
+                <div class="kpi-value text-primary mt-1">{{ pct_closed }}%</div>
+                <div class="progress mt-1" style="height: 5px;">
+                    <div class="progress-bar bg-primary" role="progressbar" style="width: {{ pct_closed }}%;"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filter and Search Toolbar -->
+    <div class="card shadow-sm border">
+        <div class="card-body p-2 p-md-3">
+            <form method="GET" action="{{ url_for('index') }}" class="row g-2 align-items-center">
+                
+                <!-- Period Type Filter (Bulanan / Mingguan / Tahunan / Semua) -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">PERIODE TEMUAN:</label>
+                    <select name="period_type" id="periodTypeSelect" onchange="this.form.submit()" class="form-select form-select-sm fw-bold border-primary text-primary">
+                        <option value="month" {% if period_type == 'month' %}selected{% endif %}>Perbulan (Bulanan)</option>
+                        <option value="week" {% if period_type == 'week' %}selected{% endif %}>Perminggu (Mingguan)</option>
+                        <option value="year" {% if period_type == 'year' %}selected{% endif %}>Pertahun (Tahunan)</option>
+                        <option value="all" {% if period_type == 'all' %}selected{% endif %}>Semua Periode</option>
+                    </select>
+                </div>
+
+                <!-- Period Value Selector (e.g. Month picker if month, Year picker if year) -->
+                {% if period_type == 'month' %}
+                    <div class="col-6 col-md-2">
+                        <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">PILIH BULAN:</label>
+                        <select name="period_val" onchange="this.form.submit()" class="form-select form-select-sm fw-semibold">
+                            {% for m in available_periods['months'] %}
+                                <option value="{{ m }}" {% if period_val == m %}selected{% endif %}>{{ m }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% elif period_type == 'year' %}
+                    <div class="col-6 col-md-2">
+                        <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">PILIH TAHUN:</label>
+                        <select name="period_val" onchange="this.form.submit()" class="form-select form-select-sm fw-semibold">
+                            {% for y in available_periods['years'] %}
+                                <option value="{{ y }}" {% if period_val == y %}selected{% endif %}>Tahun {{ y }}</option>
+                            {% endfor %}
+                        </select>
+                    </div>
+                {% elif period_type == 'week' %}
+                    <div class="col-6 col-md-2">
+                        <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">TANGGAL REFERENSI:</label>
+                        <input type="date" name="period_val" value="{{ period_val }}" onchange="this.form.submit()" class="form-control form-control-sm">
+                    </div>
+                {% else %}
+                    <input type="hidden" name="period_val" value="">
+                {% endif %}
+
+                <!-- Line Filter -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">LINE:</label>
+                    <select name="line" onchange="this.form.submit()" class="form-select form-select-sm fw-semibold">
+                        <option value="ALL" {% if line_filter == 'ALL' %}selected{% endif %}>Semua Line</option>
+                        {% for l in lines %}
+                            <option value="{{ l }}" {% if line_filter == l %}selected{% endif %}>Line {{ l }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Filter (O / X) -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">JUDGEMENT (O / X):</label>
+                    <select name="status" onchange="this.form.submit()" class="form-select form-select-sm fw-semibold">
+                        <option value="ALL" {% if status_filter == 'ALL' %}selected{% endif %}>Semua Status</option>
+                        <option value="O" {% if status_filter == 'O' or status_filter == 'OK' %}selected{% endif %}>O - Selesai Perbaikan</option>
+                        <option value="X" {% if status_filter == 'X' or status_filter == 'ON PROGRESS' %}selected{% endif %}>X - Belum Perbaikan</option>
+                    </select>
+                </div>
+
+                <!-- Keyword Search -->
+                <div class="col-12 col-md-4">
+                    <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">PENCARIAN KATA KUNCI:</label>
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text bg-white border-end-0">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
+                            </svg>
+                        </span>
+                        <input type="text" name="q" value="{{ search_query }}" placeholder="Cari temuan, PIC, posisi..." class="form-control form-control-sm border-start-0">
+                        <button type="submit" class="btn btn-dark btn-sm">Cari</button>
+                    </div>
+                </div>
+
+                <!-- Hidden view mode -->
+                <input type="hidden" name="view" value="{{ view_mode }}">
+
+                <!-- Bottom Toolbar inside Form: Reset & View Mode & Export Filtered -->
+                <div class="col-12 d-flex flex-wrap justify-content-between align-items-center pt-2 border-top mt-2">
+                    <div class="d-flex align-items-center gap-2">
+                        <span class="text-muted" style="font-size: 0.75rem;">
+                            Menampilkan <strong>{{ findings|length }}</strong> data temuan
+                            {% if period_type == 'month' %}(Bulan {{ period_val }})
+                            {% elif period_type == 'week' %}(Mingguan)
+                            {% elif period_type == 'year' %}(Tahun {{ period_val }})
+                            {% endif %}
+                        </span>
+                        {% if line_filter != 'ALL' or status_filter != 'ALL' or search_query or period_type != 'month' %}
+                            <a href="{{ url_for('index', period_type='month') }}" class="text-danger text-decoration-none fw-bold ms-2" style="font-size: 0.75rem;">Reset Filter</a>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{{ url_for('index', line=line_filter, status=status_filter, q=search_query, period_type=period_type, period_val=period_val, view='table') }}" class="btn btn-sm {% if view_mode == 'table' %}btn-primary fw-semibold{% else %}btn-outline-secondary{% endif %}" title="Tampilan Tabel Spreadsheet">
+                                <svg width="14" height="14" class="me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
+                                </svg>
+                                Tabel Excel
+                            </a>
+                            <a href="{{ url_for('index', line=line_filter, status=status_filter, q=search_query, period_type=period_type, period_val=period_val, view='card') }}" class="btn btn-sm {% if view_mode == 'card' %}btn-primary fw-semibold{% else %}btn-outline-secondary{% endif %}" title="Tampilan Kartu Foto">
+                                <svg width="14" height="14" class="me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
+                                </svg>
+                                Kartu Foto
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% if findings|length == 0 %}
+        <div class="card p-5 text-center shadow-sm">
+            <svg width="40" height="40" class="text-muted mx-auto mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+            </svg>
+            <h6 class="fw-bold text-secondary">Tidak ada data temuan untuk periode ini</h6>
+            <p class="text-muted" style="font-size: 0.75rem;">Silakan ganti pilihan bulan/periode di atas atau input temuan baru.</p>
+        </div>
+    {% endif %}
+
+    <!-- ======================================================== -->
+    <!-- VIEW MODE 1: TABEL EXCEL ASLI (Sesuai Gambar 2)          -->
+    <!-- ======================================================== -->
+    {% if view_mode == 'table' and findings|length > 0 %}
+        <div class="card shadow-sm border overflow-hidden">
+            <div class="table-responsive">
+                <table class="table-genba mb-0">
+                    <thead>
+                        <tr>
+                            <th style="width: 32px; min-width: 32px;">No</th>
+                            <th style="width: 78px; min-width: 78px;">Tgl</th>
+                            <th style="width: 55px; min-width: 55px;">Line</th>
+                            <th style="width: 65px; min-width: 65px;">Pos</th>
+                            <th style="min-width: 170px;">Temuan (Deskripsi & Foto Before)</th>
+                            <th style="min-width: 130px;">Potensi Bahaya</th>
+                            <th style="min-width: 170px;">Perbaikan (Countermeasure & After)</th>
+                            <th style="width: 78px; min-width: 78px;">Due Date</th>
+                            <th style="min-width: 160px;">Fix</th>
+                            <th style="width: 65px; min-width: 65px;">PIC</th>
+                            <th style="width: 48px; min-width: 48px;">Judg</th>
+                            <th style="width: 95px; min-width: 95px;">Aksi</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for item in findings %}
+                            <tr>
+                                <td class="text-center text-muted fw-semibold">{{ loop.index }}</td>
+                                <td class="text-center text-nowrap fw-medium">{{ item.tanggal }}</td>
+                                <td class="text-center text-nowrap"><span class="badge-line">{{ item.line }}</span></td>
+                                <td class="text-center text-nowrap fw-semibold text-secondary">{{ item.pos or '-' }}</td>
+                                
+                                <!-- Temuan + Foto Before -->
+                                <td>
+                                    <div class="fw-semibold text-dark mb-1">{{ item.temuan }}</div>
+                                    {% if item.foto_sebelum %}
+                                        <div class="d-flex align-items-center gap-1.5 mt-1">
+                                            <div class="thumbnail-box" onclick="zoomPhoto('{{ url_for('uploaded_file', filename=item.foto_sebelum) }}', 'Before: {{ item.line }} {{ item.pos }} - {{ item.temuan }}')">
+                                                <img src="{{ url_for('uploaded_file', filename=item.foto_sebelum) }}" alt="Foto Before">
+                                            </div>
+                                            <span class="text-muted" style="font-size: 0.6875rem;">(Klik untuk perbesar)</span>
+                                        </div>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Potensi -->
+                                <td class="text-dark">{{ item.potensi or '-' }}</td>
+
+                                <!-- Perbaikan + Foto After -->
+                                <td>
+                                    <div class="text-dark mb-1">{{ item.perbaikan or '-' }}</div>
+                                    {% if item.foto_sesudah %}
+                                        <div class="d-flex align-items-center gap-1.5 mt-1">
+                                            <div class="thumbnail-box border-success" onclick="zoomPhoto('{{ url_for('uploaded_file', filename=item.foto_sesudah) }}', 'After: {{ item.line }} {{ item.pos }} - {{ item.temuan }}')">
+                                                <img src="{{ url_for('uploaded_file', filename=item.foto_sesudah) }}" alt="Foto After">
+                                            </div>
+                                            <span class="text-success fw-bold" style="font-size: 0.6875rem;">(Bukti Perbaikan)</span>
+                                        </div>
+                                    {% elif item.judg == 'X' or item.judg == 'ON PROGRESS' %}
+                                        <span class="badge-progress">ON PROGRESS</span>
+                                    {% endif %}
+                                </td>
+
+                                <td class="text-center text-nowrap text-muted">{{ item.dudate or '-' }}</td>
+                                
+                                <!-- Fix (Deskripsi Perbaikan) -->
+                                <td class="text-dark">
+                                    <div>{{ item.fix_date or '-' }}</div>
+                                </td>
+
+                                <td class="text-center text-nowrap fw-semibold">{{ item.pic or '-' }}</td>
+                                
+                                <!-- Judgement (O / X) -->
+                                <td class="text-center text-nowrap">
+                                    {% if item.judg == 'O' or item.judg == 'OK' %}
+                                        <span class="badge-ok" title="Sudah terjadi perbaikan">O</span>
+                                    {% else %}
+                                        <span class="badge-progress" style="background-color: #fee2e2; color: #991b1b; border-color: #fca5a5;" title="Belum terjadi perbaikan">X</span>
+                                    {% endif %}
+                                </td>
+
+                                <!-- Action Buttons: Detail, Edit, Hapus -->
+                                <td class="text-center text-nowrap">
+                                    <div class="d-flex justify-content-center align-items-center gap-1">
+                                        <a href="{{ url_for('detail_finding', finding_id=item.id) }}" class="btn btn-sm btn-outline-secondary p-1" title="Lihat Lembar Verifikasi">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/>
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/>
+                                            </svg>
+                                        </a>
+                                        <a href="{{ url_for('edit_finding', finding_id=item.id) }}" class="btn btn-sm btn-outline-primary p-1" title="Edit / Update">
+                                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/>
+                                            </svg>
+                                        </a>
+                                        <form action="{{ url_for('delete_finding', finding_id=item.id) }}" method="POST" class="d-inline m-0 p-0">
+                                            <button type="button" class="btn btn-sm btn-outline-danger p-1" title="Hapus Data" onclick="confirmDelete(event, this.closest('form'))">
+                                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/>
+                                                </svg>
+                                            </button>
+                                        </form>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    {% endif %}
+
+    <!-- ======================================================== -->
+    <!-- VIEW MODE 2: KARTU FOTO GENBA (Card Grid)               -->
+    <!-- ======================================================== -->
+    {% if view_mode == 'card' and findings|length > 0 %}
+        <div class="row g-3">
+            {% for item in findings %}
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="card h-100 shadow-sm border">
+                        
+                        <!-- Card Header -->
+                        <div class="card-header bg-light py-2 px-3 d-flex justify-content-between align-items-center border-bottom">
+                            <div class="d-flex align-items-center gap-1.5">
+                                <span class="badge-line">Line {{ item.line }}</span>
+                                {% if item.pos %}
+                                    <span class="badge bg-secondary-subtle text-secondary border" style="font-size: 0.7rem;">{{ item.pos }}</span>
+                                {% endif %}
+                            </div>
+                            <div>
+                                {% if item.judg == 'O' or item.judg == 'OK' %}
+                                    <span class="badge-ok" title="Sudah terjadi perbaikan">O (SELESAI)</span>
+                                {% else %}
+                                    <span class="badge-progress" style="background-color: #fee2e2; color: #991b1b; border-color: #fca5a5;" title="Belum terjadi perbaikan">X (BELUM SELESAI)</span>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Before & After Photo Grid -->
+                        <div class="p-2 bg-light border-bottom">
+                            <div class="row g-1">
+                                <!-- Before -->
+                                <div class="col-6">
+                                    <div class="border rounded bg-dark position-relative overflow-hidden" style="height: 110px;">
+                                        {% if item.foto_sebelum %}
+                                            <img src="{{ url_for('uploaded_file', filename=item.foto_sebelum) }}" alt="Before" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" onclick="zoomPhoto(this.src, 'Foto Temuan (Before) - Line {{ item.line }} {{ item.pos }}')">
+                                            <span class="badge bg-dark position-absolute top-0 start-0 m-1 opacity-75" style="font-size: 0.65rem;">BEFORE</span>
+                                        {% else %}
+                                            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted" style="font-size: 0.7rem;">
+                                                <svg width="20" height="20" class="mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                </svg>
+                                                <span>Tanpa Foto</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+
+                                <!-- After -->
+                                <div class="col-6">
+                                    <div class="border rounded bg-dark position-relative overflow-hidden" style="height: 110px;">
+                                        {% if item.foto_sesudah %}
+                                            <img src="{{ url_for('uploaded_file', filename=item.foto_sesudah) }}" alt="After" class="w-100 h-100 object-fit-cover" style="cursor: pointer;" onclick="zoomPhoto(this.src, 'Foto Perbaikan (After) - Line {{ item.line }} {{ item.pos }}')">
+                                            <span class="badge bg-success position-absolute top-0 start-0 m-1" style="font-size: 0.65rem;">AFTER</span>
+                                        {% else %}
+                                            <div class="w-100 h-100 d-flex flex-column align-items-center justify-content-center text-muted" style="font-size: 0.7rem;">
+                                                <svg width="20" height="20" class="mb-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                                                </svg>
+                                                <span>Belum Ada Foto</span>
+                                            </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Card Body -->
+                        <div class="card-body p-3 d-flex flex-column justify-content-between">
+                            <div>
+                                <div class="mb-2">
+                                    <small class="text-muted fw-bold d-block text-uppercase" style="font-size: 0.6875rem;">Temuan Safety:</small>
+                                    <div class="fw-bold text-dark" style="font-size: 0.8125rem;">{{ item.temuan }}</div>
+                                </div>
+
+                                {% if item.potensi %}
+                                    <div class="p-2 mb-2 bg-light border-start border-2 border-danger rounded-end" style="font-size: 0.75rem;">
+                                        <small class="text-danger fw-bold d-block">Potensi Risiko:</small>
+                                        <span class="text-dark">{{ item.potensi }}</span>
+                                    </div>
+                                {% endif %}
+
+                                {% if item.perbaikan %}
+                                    <div class="mb-2" style="font-size: 0.75rem;">
+                                        <small class="text-muted fw-bold d-block text-uppercase" style="font-size: 0.6875rem;">Tindakan Perbaikan:</small>
+                                        <div class="p-2 bg-light border rounded text-dark">{{ item.perbaikan }}</div>
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <div class="pt-2 border-top mt-2 row g-1 text-muted" style="font-size: 0.7rem;">
+                                <div class="col-6">Tgl: <strong class="text-dark">{{ item.tanggal }}</strong></div>
+                                <div class="col-6">PIC: <strong class="text-dark">{{ item.pic or '-' }}</strong></div>
+                                <div class="col-6">Due Date: <strong class="text-dark">{{ item.dudate or '-' }}</strong></div>
+                                <div class="col-6">Fix: <strong class="text-success">{{ item.fix_date or '-' }}</strong></div>
+                            </div>
+                        </div>
+
+                        <!-- Card Footer -->
+                        <div class="card-footer bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                            <a href="{{ url_for('detail_finding', finding_id=item.id) }}" class="text-decoration-none fw-semibold d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+                                <span>Lembar Verifikasi</span>
+                            </a>
+                            <div class="d-flex align-items-center gap-1">
+                                <a href="{{ url_for('edit_finding', finding_id=item.id) }}" class="btn btn-sm btn-outline-primary py-0 px-2" style="font-size: 0.75rem;">
+                                    Update
+                                </a>
+                                <form action="{{ url_for('delete_finding', finding_id=item.id) }}" method="POST" class="d-inline">
+                                    <button type="button" class="btn btn-sm btn-outline-danger py-0 px-1" title="Hapus" onclick="confirmDelete(event, this.closest('form'))">
+                                        <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                    </button>
+                                </form>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    {% endif %}
+
+</div>
+
+<!-- Photo Zoom Modal (Bootstrap Standard Modal) -->
+<div class="modal fade" id="photoZoomModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark border-0">
+            <div class="modal-header py-2 px-3 border-secondary text-white">
+                <h6 class="modal-title fs-6 fw-bold text-truncate" id="photoZoomTitle">Pratinjau Foto Temuan</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-1 text-center bg-black d-flex align-items-center justify-content-center" style="min-height: 300px; max-height: 80vh;">
+                <img id="photoZoomImg" src="" alt="Zoom Foto" class="img-fluid" style="max-height: 75vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function zoomPhoto(imgSrc, title) {
+        document.getElementById('photoZoomImg').src = imgSrc;
+        document.getElementById('photoZoomTitle').textContent = title || 'Pratinjau Foto Temuan';
+        const modal = new bootstrap.Modal(document.getElementById('photoZoomModal'));
+        modal.show();
+    }
+</script>
+{% endblock %}

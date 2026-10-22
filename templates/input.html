@@ -1,0 +1,640 @@
+{% extends "base.html" %}
+
+{% block title %}Input Temuan Safety - PT. FUJISEAT INDONESIA{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+
+        <!-- Breadcrumb Navigation -->
+        <div class="d-flex align-items-center justify-content-between mb-3">
+            <div class="d-flex align-items-center gap-2" style="font-size: 0.8125rem;">
+                <a href="{{ url_for('index') }}" class="text-decoration-none text-muted fw-semibold d-flex align-items-center gap-1">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                    <span>Dashboard</span>
+                </a>
+                <span class="text-muted">/</span>
+                <span class="text-dark fw-bold">Input Temuan Genba Baru</span>
+            </div>
+            <span class="badge bg-secondary-subtle text-secondary border">Area Genba D26A</span>
+        </div>
+
+        <!-- Main Card Form -->
+        <div class="card shadow-sm border mb-4">
+            
+            <div class="card-header bg-dark text-white py-2 px-3 d-flex align-items-center justify-content-between">
+                <div class="d-flex align-items-center gap-2">
+                    <svg width="16" height="16" class="text-primary" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                    </svg>
+                    <span class="fw-bold text-uppercase" style="font-size: 0.8125rem; letter-spacing: 0.05em;">Formulir Temuan Safety & Near Miss</span>
+                </div>
+                <small class="text-muted">Standar Pelaporan Genba</small>
+            </div>
+
+            <form action="{{ url_for('input_finding') }}" method="POST" enctype="multipart/form-data" class="card-body p-3 p-md-4" onsubmit="confirmSaveInput(event, this)">
+
+                <!-- 1. FOTO TEMUAN SAFETY -->
+                <div class="form-section-box">
+                    <div class="form-section-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>1. Foto Temuan Safety</span>
+                    </div>
+
+                    <input type="file" id="fotoSebelumInput" name="foto_sebelum" accept="image/*" class="d-none" onchange="handleFileSelect(this)">
+
+                    <div class="row g-3 align-items-center">
+                        <div class="col-12 col-md-5">
+                            <p class="text-muted mb-3" style="font-size: 0.75rem;">
+                                Ambil foto langsung saat inspeksi genba menggunakan kamera perangkat (HP / Laptop) atau pilih file dari galeri.
+                            </p>
+                            
+                            <div class="d-flex flex-column gap-2">
+                                <button type="button" onclick="startCameraModal()" class="btn btn-sm btn-primary d-flex align-items-center justify-content-center gap-2">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span class="fw-semibold">Buka Kamera (Laptop / HP)</span>
+                                </button>
+
+                                <button type="button" onclick="document.getElementById('fotoSebelumInput').click()" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <span>Pilih dari File / Galeri</span>
+                                </button>
+                            </div>
+
+                            <div id="fileStatusText" class="mt-2 text-muted" style="font-size: 0.75rem;">
+                                Status: <em>Belum ada foto</em>
+                            </div>
+                        </div>
+
+                        <div class="col-12 col-md-7">
+                            <div id="previewBox" class="border rounded bg-dark d-flex align-items-center justify-content-center position-relative overflow-hidden" style="height: 180px;">
+                                <div id="previewPlaceholder" class="text-center text-muted p-3">
+                                    <svg width="32" height="32" class="mb-1 text-secondary opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                    <div style="font-size: 0.75rem;">Pratinjau Foto Temuan Safety</div>
+                                </div>
+                                <img id="imagePreview" src="#" alt="Preview" class="d-none w-100 h-100 object-fit-contain">
+                                <button type="button" id="removePhotoBtn" onclick="removePhoto()" class="d-none btn btn-sm btn-danger position-absolute top-0 end-0 m-2 py-0 px-1" title="Hapus Foto">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 2. LOKASI KERJA & TANGGAL -->
+                <div class="form-section-box">
+                    <div class="form-section-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                        <span>2. Lokasi Kerja & Waktu Inspeksi</span>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Line Produksi <span class="text-danger">*</span></label>
+                            <select name="line" id="inputLine" required class="form-select form-select-sm fw-semibold">
+                                {% for l in lines %}
+                                    <option value="{{ l }}" {% if l == 'FB 4' %}selected{% endif %}>Line {{ l }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Pos <span class="text-danger">*</span></label>
+                            <input type="text" name="pos" id="inputPos" required minlength="1" maxlength="50" placeholder="Contoh: Pos 10, Pos 9, QC" class="form-control form-control-sm">
+                            <div class="invalid-feedback" style="font-size: 0.7rem;">Pos wajib diisi.</div>
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Tanggal Temuan <span class="text-danger">*</span></label>
+                            <input type="date" name="tanggal" id="inputTanggal" value="{{ today_str }}" required class="form-control form-control-sm">
+                            <div class="invalid-feedback" style="font-size: 0.7rem;">Tanggal temuan wajib diisi.</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 3. URAIAN TEMUAN SAFETY, POTENSI BAHAYA & PERBAIKAN -->
+                <div class="form-section-box">
+                    <div class="form-section-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                        </svg>
+                        <span>3. Uraian Temuan, Potensi Bahaya & Rencana Penanganan</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Deskripsi Temuan Safety (Unsafe Condition) <span class="text-danger">*</span></label>
+                        <textarea name="temuan" id="inputTemuan" rows="3" required minlength="5" placeholder="Tuliskan kondisi tidak aman yang ditemukan secara jelas (minimal 5 karakter, contoh: Tas pribadi di area bawah mesin, Kabel mengelupas, Baud berada di atas meja...)" class="form-control form-control-sm"></textarea>
+                        <div class="d-flex justify-content-between mt-1">
+                            <span class="text-muted" style="font-size: 0.7rem;">Minimal 5 karakter deskripsi yang bermakna.</span>
+                            <span id="charCountTemuan" class="text-muted" style="font-size: 0.7rem;">0 karakter</span>
+                        </div>
+                    </div>
+
+                    <div class="mb-3">
+                        <div class="d-flex justify-content-between align-items-center mb-1">
+                            <label class="form-label mb-0 fw-semibold text-secondary" style="font-size: 0.75rem;">Potensi Bahaya <span class="text-danger">*</span></label>
+                            <span class="text-muted" style="font-size: 0.6875rem;">Bisa pilih lebih dari 1 potensi bahaya</span>
+                        </div>
+                        <input type="text" name="potensi" id="inputPotensi" required minlength="3" placeholder="Pilih tombol di bawah (bisa lebih dari satu) atau ketik manual..." class="form-control form-control-sm" oninput="syncPotensiChips('inputPotensi', '#inputChipContainer')">
+                        
+                        <!-- Quick Multi-Selection Chips -->
+                        <div id="inputChipContainer" class="mt-2 d-flex flex-wrap gap-1 align-items-center">
+                            <span class="text-muted me-1 fw-semibold" style="font-size: 0.7rem;">Pilihan Cepat:</span>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="Konsleting listrik" onclick="togglePotensi(this, 'Konsleting listrik', 'inputPotensi')">+ Konsleting listrik</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="MP tergores" onclick="togglePotensi(this, 'MP tergores', 'inputPotensi')">+ MP tergores</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="MP terpleset" onclick="togglePotensi(this, 'MP terpleset', 'inputPotensi')">+ MP terpleset</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="Mesin terjatuh" onclick="togglePotensi(this, 'Mesin terjatuh', 'inputPotensi')">+ Mesin terjatuh</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="MP tersetrum" onclick="togglePotensi(this, 'MP tersetrum', 'inputPotensi')">+ MP tersetrum</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="Material tersangkut" onclick="togglePotensi(this, 'Material tersangkut', 'inputPotensi')">+ Material tersangkut</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="Part berjatuhan" onclick="togglePotensi(this, 'Part berjatuhan', 'inputPotensi')">+ Part berjatuhan</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="Tangan terjepit" onclick="togglePotensi(this, 'Tangan terjepit', 'inputPotensi')">+ Tangan terjepit</button>
+                            <button type="button" class="btn btn-xs btn-outline-secondary py-0 px-2 chip-potensi" style="font-size: 0.7rem;" data-val="Mesin bergeser & getaran" onclick="togglePotensi(this, 'Mesin bergeser & getaran', 'inputPotensi')">+ Mesin bergeser & getaran</button>
+                            <button type="button" class="btn btn-xs btn-link text-danger text-decoration-none py-0 px-1 ms-1" style="font-size: 0.6875rem;" onclick="clearPotensi('inputPotensi', '#inputChipContainer')">Bersihkan</button>
+                        </div>
+                    </div>
+
+                    <div>
+                        <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Rencana Tindakan Perbaikan (Countermeasure)</label>
+                        <textarea name="perbaikan" id="inputPerbaikan" rows="2" placeholder="Tindakan perbaikan atau pencegahan awal yang direncanakan / disarankan..." class="form-control form-control-sm"></textarea>
+                    </div>
+                </div>
+
+                <!-- 4. TARGET, PIC, & JUDGEMENT -->
+                <div class="form-section-box">
+                    <div class="form-section-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                        </svg>
+                        <span>4. Target & Penanggung Jawab</span>
+                    </div>
+
+                    <div class="row g-2">
+                        <div class="col-12 col-md-4">
+                            <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Due Date <span class="text-danger">*</span></label>
+                            <input type="date" name="dudate" id="inputDudate" required class="form-control form-control-sm">
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Nama PIC <span class="text-danger">*</span></label>
+                            <input type="text" name="pic" id="inputPic" required minlength="2" placeholder="Contoh: Rostika, Mtc" class="form-control form-control-sm">
+                        </div>
+
+                        <div class="col-12 col-md-4">
+                            <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Status Judgement</label>
+                            <!-- Judgement status locked/disabled to Belum Perbaikan on input -->
+                            <select class="form-select form-select-sm fw-bold bg-light text-danger" disabled style="cursor: not-allowed;">
+                                <option selected>X - Belum Perbaikan</option>
+                            </select>
+                            <input type="hidden" name="judg" value="X">
+                            <small class="text-muted d-block mt-1" style="font-size: 0.6875rem;">
+                                *Terkunci <strong>Belum Perbaikan</strong>. Group Leader (GL) dapat memperbarui status menjadi <strong>Selesai</strong> saat mengedit data.
+                            </small>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- 5. FIX & FOTO PERBAIKAN (OPSIONAL) -->
+                <div class="form-section-box">
+                    <div class="form-section-title">
+                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                        </svg>
+                        <span>5. Fix Description & Foto Fix</span>
+                        <span class="badge bg-secondary-subtle text-secondary border ms-auto py-0 px-1" style="font-size: 0.65rem;">Opsional</span>
+                    </div>
+
+                    <div class="row g-3 align-items-start">
+                        <div class="col-12 col-md-7">
+                            <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">
+                                Fix (Deskripsi Perbaikan) <span class="text-muted fw-normal">(Opsional)</span>
+                            </label>
+                            <input type="text" name="fix_date" id="inputFixDate" placeholder="(Opsional) Tuliskan keterangan jika temuan sudah langsung diperbaiki..." class="form-control form-control-sm">
+                            <small class="text-muted" style="font-size: 0.7rem;">Dapat dikosongkan jika perbaikan belum dilakukan.</small>
+                        </div>
+
+                        <div class="col-12 col-md-5">
+                            <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">
+                                Foto Bukti Fix <span class="text-muted fw-normal">(Opsional)</span>
+                            </label>
+                            <div class="d-flex gap-2 align-items-center">
+                                <div class="border rounded bg-dark d-flex align-items-center justify-content-center overflow-hidden position-relative" style="width: 85px; height: 60px; flex-shrink: 0;">
+                                    <span id="noInputFixText" class="text-muted text-center" style="font-size: 0.65rem;">Belum ada</span>
+                                    <img id="previewInputFix" src="#" alt="Preview Fix" class="d-none w-100 h-100 object-fit-contain">
+                                </div>
+                                <div class="d-flex flex-column gap-1 flex-grow-1">
+                                    <input type="file" id="fotoFixInput" name="foto_fix" accept="image/*" class="d-none" onchange="previewFile(this, 'previewInputFix', 'noInputFixText')">
+                                    <button type="button" onclick="document.getElementById('fotoFixInput').click()" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center gap-1 py-1" style="font-size: 0.75rem;">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                        <span>+ Foto Fix (Opsional)</span>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Action Footer -->
+                <div class="d-flex justify-content-end gap-2 pt-2 border-top">
+                    <a href="{{ url_for('index') }}" class="btn btn-sm btn-outline-secondary px-3">Batal</a>
+                    <button type="submit" class="btn btn-sm btn-primary px-4 fw-semibold d-flex align-items-center gap-1.5" style="background-color: #1e3a8a; border-color: #1e3a8a;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                        <span>Simpan Temuan Safety</span>
+                    </button>
+                </div>
+
+            </form>
+        </div>
+
+    </div>
+</div>
+
+<!-- ======================================================== -->
+<!-- LIVE CAMERA VIEWFINDER MODAL (LAPTOP & PHONE)           -->
+<!-- ======================================================== -->
+<div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content bg-dark text-white border-0 shadow-lg">
+            <div class="modal-header py-2 px-3 border-secondary">
+                <div class="d-flex align-items-center gap-2">
+                    <span class="badge bg-danger rounded-circle p-1"></span>
+                    <h6 class="modal-title fs-6 fw-bold" id="cameraModalLabel">Kamera Langsung Perangkat</h6>
+                </div>
+                <button type="button" class="btn-close btn-close-white" onclick="closeCameraModal()"></button>
+            </div>
+            
+            <div class="modal-body p-0 position-relative bg-black d-flex align-items-center justify-content-center" style="min-height: 280px; max-height: 70vh;">
+                <video id="cameraVideo" autoplay playsinline class="w-100 h-100 object-fit-cover"></video>
+                <canvas id="cameraCanvas" class="d-none"></canvas>
+
+                <!-- Camera Error Alert Box -->
+                <div id="cameraErrorBox" class="d-none position-absolute inset-0 p-4 text-center bg-dark w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                    <svg width="32" height="32" class="text-danger mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
+                    </svg>
+                    <p id="cameraErrorMessage" class="small text-secondary mb-3"></p>
+                    <button type="button" onclick="document.getElementById('fotoSebelumInput').click(); closeCameraModal();" class="btn btn-sm btn-primary">
+                        Pilih File Foto Manual
+                    </button>
+                </div>
+            </div>
+
+            <div class="modal-footer py-2 px-3 border-secondary d-flex justify-content-between">
+                <button type="button" onclick="switchCameraMode()" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span>Putar Kamera</span>
+                </button>
+
+                <button type="button" onclick="captureSnapshot()" class="btn btn-danger btn-sm px-4 fw-bold d-flex align-items-center gap-1.5 shadow">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                    </svg>
+                    <span>Jepret Foto</span>
+                </button>
+
+                <button type="button" class="btn btn-sm btn-secondary" onclick="closeCameraModal()">Tutup</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cameraStream = null;
+    let cameraModalInstance = null;
+    let currentFacingMode = 'environment';
+
+    async function startCameraModal() {
+        const errorBox = document.getElementById('cameraErrorBox');
+        const errorMsg = document.getElementById('cameraErrorMessage');
+        const video = document.getElementById('cameraVideo');
+
+        errorBox.classList.add('d-none');
+        cameraModalInstance = new bootstrap.Modal(document.getElementById('cameraModal'));
+        cameraModalInstance.show();
+
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+            errorMsg.textContent = "Fitur kamera langsung tidak didukung pada browser ini.";
+            errorBox.classList.remove('d-none');
+            return;
+        }
+
+        try {
+            if (cameraStream) {
+                cameraStream.getTracks().forEach(t => t.stop());
+            }
+
+            cameraStream = await navigator.mediaDevices.getUserMedia({
+                video: {
+                    facingMode: currentFacingMode,
+                    width: { ideal: 1280 },
+                    height: { ideal: 720 }
+                },
+                audio: false
+            });
+            video.srcObject = cameraStream;
+        } catch (err) {
+            try {
+                // Fallback to any camera / laptop webcam
+                cameraStream = await navigator.mediaDevices.getUserMedia({ video: true, audio: false });
+                video.srcObject = cameraStream;
+            } catch (fallbackErr) {
+                errorMsg.textContent = "Akses kamera ditolak atau tidak ditemukan: " + (fallbackErr.message || fallbackErr.name);
+                errorBox.classList.remove('d-none');
+            }
+        }
+    }
+
+    function switchCameraMode() {
+        currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
+        startCameraModal();
+    }
+
+    function captureSnapshot() {
+        const video = document.getElementById('cameraVideo');
+        const canvas = document.getElementById('cameraCanvas');
+        if (!video || !cameraStream) return;
+
+        canvas.width = video.videoWidth || 1280;
+        canvas.height = video.videoHeight || 720;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        canvas.toBlob((blob) => {
+            if (!blob) return;
+            const file = new File([blob], `genba_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+            document.getElementById('fotoSebelumInput').files = dataTransfer.files;
+
+            const preview = document.getElementById('imagePreview');
+            preview.src = canvas.toDataURL('image/jpeg');
+            preview.classList.remove('d-none');
+            document.getElementById('previewPlaceholder').classList.add('d-none');
+            document.getElementById('removePhotoBtn').classList.remove('d-none');
+            document.getElementById('fileStatusText').innerHTML = `<span class="text-success fw-bold">Foto Berhasil Dijepret (${file.name})</span>`;
+
+            closeCameraModal();
+        }, 'image/jpeg', 0.9);
+    }
+
+    function closeCameraModal() {
+        if (cameraStream) {
+            cameraStream.getTracks().forEach(t => t.stop());
+            cameraStream = null;
+        }
+        if (cameraModalInstance) {
+            cameraModalInstance.hide();
+        }
+    }
+
+    function handleFileSelect(input) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const preview = document.getElementById('imagePreview');
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+                document.getElementById('previewPlaceholder').classList.add('d-none');
+                document.getElementById('removePhotoBtn').classList.remove('d-none');
+                document.getElementById('fileStatusText').innerHTML = `<span class="text-success fw-bold">File Terpilih: ${file.name}</span>`;
+            };
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function previewFile(input, imgId, textId) {
+        if (input.files && input.files[0]) {
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = document.getElementById(imgId);
+                if (img) {
+                    img.src = e.target.result;
+                    img.classList.remove('d-none');
+                }
+                const textElem = document.getElementById(textId);
+                if (textElem) textElem.classList.add('d-none');
+            };
+            reader.readAsDataURL(input.files[0]);
+        }
+    }
+
+    function removePhoto() {
+        document.getElementById('fotoSebelumInput').value = "";
+        document.getElementById('imagePreview').src = "#";
+        document.getElementById('imagePreview').classList.add('d-none');
+        document.getElementById('previewPlaceholder').classList.remove('d-none');
+        document.getElementById('removePhotoBtn').classList.add('d-none');
+        document.getElementById('fileStatusText').innerHTML = `Status: <em>Belum ada foto</em>`;
+    }
+
+    function togglePotensi(btn, val, inputId = 'inputPotensi') {
+        const input = document.getElementById(inputId);
+        if (!input) return;
+
+        let raw = input.value.trim();
+        let items = raw ? raw.split(/,\s*|;\s*|\s*&\s*/).map(s => s.trim()).filter(s => s.length > 0) : [];
+        const idx = items.findIndex(item => item.toLowerCase() === val.toLowerCase());
+
+        if (idx >= 0) {
+            items.splice(idx, 1);
+            btn.classList.remove('btn-primary', 'text-white', 'active');
+            btn.classList.add('btn-outline-secondary');
+        } else {
+            items.push(val);
+            btn.classList.remove('btn-outline-secondary');
+            btn.classList.add('btn-primary', 'text-white', 'active');
+        }
+
+        input.value = items.join(', ');
+        input.classList.remove('is-invalid');
+    }
+
+    function clearPotensi(inputId = 'inputPotensi', containerSelector = '#inputChipContainer') {
+        const input = document.getElementById(inputId);
+        if (input) input.value = '';
+        syncPotensiChips(inputId, containerSelector);
+    }
+
+    function syncPotensiChips(inputId = 'inputPotensi', containerSelector = '#inputChipContainer') {
+        const input = document.getElementById(inputId);
+        const container = document.querySelector(containerSelector);
+        if (!input || !container) return;
+
+        const items = input.value.split(/,\s*|;\s*|\s*&\s*/).map(s => s.trim().toLowerCase()).filter(s => s.length > 0);
+        const chips = container.querySelectorAll('.chip-potensi');
+        chips.forEach(chip => {
+            const val = (chip.getAttribute('data-val') || chip.textContent.replace(/^\+\s*/, '')).trim().toLowerCase();
+            if (items.includes(val)) {
+                chip.classList.remove('btn-outline-secondary');
+                chip.classList.add('btn-primary', 'text-white', 'active');
+            } else {
+                chip.classList.remove('btn-primary', 'text-white', 'active');
+                chip.classList.add('btn-outline-secondary');
+            }
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function() {
+        syncPotensiChips('inputPotensi', '#inputChipContainer');
+        const temuanEl = document.getElementById('inputTemuan');
+        const charCountEl = document.getElementById('charCountTemuan');
+        if (temuanEl && charCountEl) {
+            temuanEl.addEventListener('input', function() {
+                const len = this.value.trim().length;
+                charCountEl.textContent = `${len} karakter`;
+                if (len >= 5) {
+                    charCountEl.className = 'text-success fw-bold';
+                    temuanEl.classList.remove('is-invalid');
+                } else {
+                    charCountEl.className = 'text-muted';
+                }
+            });
+        }
+    });
+
+    function confirmSaveInput(event, form) {
+        event.preventDefault();
+
+        // 1. Validasi Pos
+        const posInput = form.querySelector('[name="pos"]');
+        const posVal = posInput ? posInput.value.trim() : '';
+        if (!posVal || posVal.length < 1) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Pos Wajib Diisi',
+                text: 'Silakan isi Pos kerja (contoh: Pos 10, Pos 9, QC).',
+                confirmButtonColor: '#1e3a8a'
+            });
+            posInput?.classList.add('is-invalid');
+            posInput?.focus();
+            return false;
+        }
+        posInput?.classList.remove('is-invalid');
+
+        // 2. Validasi Tanggal
+        const tglInput = form.querySelector('[name="tanggal"]');
+        if (!tglInput || !tglInput.value) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Tanggal Temuan Wajib Diisi',
+                text: 'Silakan tentukan tanggal pelaksanaan inspeksi temuan.',
+                confirmButtonColor: '#1e3a8a'
+            });
+            tglInput?.focus();
+            return false;
+        }
+
+        // 3. Validasi Temuan (Minimal 5 karakter & bermakna)
+        const temuanInput = form.querySelector('[name="temuan"]');
+        const temuanVal = temuanInput ? temuanInput.value.trim() : '';
+        const cleanTemuan = temuanVal.replace(/[\s\-_.,]/g, '');
+        if (!temuanVal || temuanVal.length < 5 || cleanTemuan.length < 3) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Deskripsi Temuan Tidak Valid',
+                text: 'Deskripsi temuan safety minimal 5 karakter bermakna. Tidak boleh hanya simbol acak.',
+                confirmButtonColor: '#1e3a8a'
+            });
+            temuanInput?.classList.add('is-invalid');
+            temuanInput?.focus();
+            return false;
+        }
+        temuanInput?.classList.remove('is-invalid');
+
+        // 4. Validasi Potensi Bahaya (Minimal 3 karakter)
+        const potensiInput = form.querySelector('[name="potensi"]');
+        const potensiVal = potensiInput ? potensiInput.value.trim() : '';
+        if (!potensiVal || potensiVal.length < 3) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Potensi Bahaya Wajib Diisi',
+                text: 'Silakan tentukan potensi bahaya (minimal 3 karakter atau pilih dari quick chips).',
+                confirmButtonColor: '#1e3a8a'
+            });
+            potensiInput?.classList.add('is-invalid');
+            potensiInput?.focus();
+            return false;
+        }
+        potensiInput?.classList.remove('is-invalid');
+
+        // 5. Validasi Due Date
+        const dudateInput = form.querySelector('[name="dudate"]');
+        if (!dudateInput || !dudateInput.value) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Due Date Wajib Diisi',
+                text: 'Silakan tentukan target batas waktu penyelesaian perbaikan (Due Date).',
+                confirmButtonColor: '#1e3a8a'
+            });
+            dudateInput?.classList.add('is-invalid');
+            dudateInput?.focus();
+            return false;
+        }
+        dudateInput?.classList.remove('is-invalid');
+
+        // 6. Validasi PIC (Minimal 2 karakter)
+        const picInput = form.querySelector('[name="pic"]');
+        const picVal = picInput ? picInput.value.trim() : '';
+        if (!picVal || picVal.length < 2) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'PIC Wajib Diisi',
+                text: 'Silakan masukkan nama penanggung jawab perbaikan (PIC minimal 2 karakter).',
+                confirmButtonColor: '#1e3a8a'
+            });
+            picInput?.classList.add('is-invalid');
+            picInput?.focus();
+            return false;
+        }
+        picInput?.classList.remove('is-invalid');
+
+        // Konfirmasi Simpan
+        Swal.fire({
+            title: 'Simpan Temuan Baru?',
+            html: `
+                <div class="text-start p-2 small bg-light rounded border">
+                    <div><strong>Line:</strong> ${form.querySelector('[name="line"]').value} | <strong>Pos:</strong> ${posVal}</div>
+                    <div><strong>Temuan:</strong> ${temuanVal}</div>
+                    <div><strong>Potensi:</strong> ${potensiVal}</div>
+                    <div><strong>Target Due Date:</strong> ${dudateInput.value} | <strong>PIC:</strong> ${picVal}</div>
+                    <div class="text-danger mt-1"><strong>Status:</strong> X - Belum Perbaikan</div>
+                </div>
+                <div class="mt-2 text-muted" style="font-size: 0.8rem;">Data akan masuk ke tabel monitoring dan menunggu verifikasi Group Leader (GL).</div>
+            `,
+            icon: 'question',
+            showCancelButton: true,
+            confirmButtonColor: '#1e3a8a',
+            cancelButtonColor: '#64748b',
+            confirmButtonText: 'Ya, Simpan Temuan',
+            cancelButtonText: 'Periksa Kembali',
+            reverseButtons: true
+        }).then((result) => {
+            if (result.isConfirmed) {
+                Swal.fire({
+                    title: 'Menyimpan Temuan...',
+                    text: 'Sedang memproses penyimpanan data',
+                    allowOutsideClick: false,
+                    didOpen: () => {
+                        Swal.showLoading();
+                    }
+                });
+                form.submit();
+            }
+        });
+    }
+</script>
+{% endblock %}

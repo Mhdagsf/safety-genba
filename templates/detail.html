@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% block title %}Lembar Verifikasi Temuan Safety #{{ finding.id }} - PT. FUJISEAT INDONESIA{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-12 col-lg-10">
+
+        <!-- Action Toolbar (No Print) -->
+        <div class="d-flex justify-content-between align-items-center mb-3 no-print bg-white p-2 px-3 rounded border shadow-sm">
+            <a href="{{ url_for('index') }}" class="text-decoration-none text-muted fw-semibold d-flex align-items-center gap-1" style="font-size: 0.8125rem;">
+                <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"/></svg>
+                <span>Kembali ke Dashboard</span>
+            </a>
+            <div class="d-flex gap-2">
+                <a href="{{ url_for('edit_finding', finding_id=finding.id) }}" class="btn btn-sm btn-outline-secondary d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
+                    <span>Edit / Update</span>
+                </a>
+                <button type="button" onclick="window.print()" class="btn btn-sm btn-dark d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z"/></svg>
+                    <span>Cetak Lembar Verifikasi</span>
+                </button>
+                <form action="{{ url_for('delete_finding', finding_id=finding.id) }}" method="POST" class="d-inline m-0">
+                    <button type="button" onclick="confirmDelete(event, this.closest('form'))" class="btn btn-sm btn-outline-danger d-flex align-items-center gap-1" style="font-size: 0.75rem;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                        <span>Hapus</span>
+                    </button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Official Printable Verification Sheet -->
+        <div class="card shadow-sm border p-4 p-md-5 bg-white mb-4">
+            
+            <!-- Sheet Header -->
+            <div class="d-flex justify-content-between align-items-center border-bottom border-dark border-2 pb-3 mb-4">
+                <div>
+                    <h5 class="fw-bold text-dark text-uppercase mb-0 tracking-wider">PT. FUJISEAT INDONESIA</h5>
+                    <div class="fw-bold text-secondary text-uppercase" style="font-size: 0.8125rem;">Lembar Verifikasi & Monitoring Temuan Genba D26A</div>
+                </div>
+                <div class="text-end text-muted" style="font-size: 0.75rem;">
+                    <div>ID Temuan: <strong class="text-dark">#{{ finding.id }}</strong></div>
+                    <div>Tanggal: <strong class="text-dark">{{ finding.tanggal }}</strong></div>
+                </div>
+            </div>
+
+            <!-- Meta Information Bar -->
+            <div class="row g-2 p-3 bg-light border rounded mb-4" style="font-size: 0.8125rem;">
+                <div class="col-6 col-md-3">
+                    <span class="text-muted d-block" style="font-size: 0.6875rem;">Line Produksi:</span>
+                    <strong class="fs-6 text-dark">Line {{ finding.line }}</strong>
+                </div>
+                <div class="col-6 col-md-3">
+                    <span class="text-muted d-block" style="font-size: 0.6875rem;">Pos:</span>
+                    <strong class="fs-6 text-dark">{{ finding.pos or '-' }}</strong>
+                </div>
+                <div class="col-6 col-md-3">
+                    <span class="text-muted d-block" style="font-size: 0.6875rem;">Tanggal Temuan:</span>
+                    <strong class="text-dark">{{ finding.tanggal }}</strong>
+                </div>
+                <div class="col-6 col-md-3">
+                    <span class="text-muted d-block" style="font-size: 0.6875rem;">Status Judgement:</span>
+                    {% if finding.judg == 'O' or finding.judg == 'OK' %}
+                        <span class="badge-ok">O (SELESAI)</span>
+                    {% else %}
+                        <span class="badge-progress" style="background-color: #fee2e2; color: #991b1b; border-color: #fca5a5;">X (BELUM SELESAI)</span>
+                    {% endif %}
+                </div>
+            </div>
+
+            <!-- Before & After Comparison Photos -->
+            <div class="mb-4">
+                <div class="fw-bold text-uppercase text-secondary mb-2" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                    Dokumentasi Visual (Before vs After)
+                </div>
+                <div class="row g-3">
+                    <!-- Before -->
+                    <div class="col-12 col-md-6">
+                        <div class="border rounded overflow-hidden">
+                            <div class="bg-dark text-white px-3 py-1 d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
+                                <span class="fw-bold">KONDISI TEMUAN (BEFORE)</span>
+                                <small class="text-secondary">{{ finding.tanggal }}</small>
+                            </div>
+                            <div class="bg-black d-flex align-items-center justify-content-center" style="height: 220px;">
+                                {% if finding.foto_sebelum %}
+                                    <img src="{{ url_for('uploaded_file', filename=finding.foto_sebelum) }}" alt="Foto Before" class="w-100 h-100 object-fit-contain">
+                                {% else %}
+                                    <span class="text-muted" style="font-size: 0.75rem;">Foto Before Tidak Tersedia</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- After -->
+                    <div class="col-12 col-md-6">
+                        <div class="border border-success rounded overflow-hidden">
+                            <div class="bg-success text-white px-3 py-1 d-flex justify-content-between align-items-center" style="font-size: 0.75rem;">
+                                <span class="fw-bold">HASIL PERBAIKAN (AFTER)</span>
+                                <small class="text-white opacity-75">{{ finding.fix_date or 'On Progress' }}</small>
+                            </div>
+                            <div class="bg-black d-flex align-items-center justify-content-center" style="height: 220px;">
+                                {% if finding.foto_sesudah %}
+                                    <img src="{{ url_for('uploaded_file', filename=finding.foto_sesudah) }}" alt="Foto After" class="w-100 h-100 object-fit-contain">
+                                {% else %}
+                                    <span class="text-muted" style="font-size: 0.75rem;">Foto After Belum Diunggah</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Description Details -->
+            <div class="d-flex flex-column gap-3 mb-4" style="font-size: 0.8125rem;">
+                <div class="p-3 bg-light border rounded">
+                    <span class="fw-bold text-secondary text-uppercase d-block mb-1" style="font-size: 0.6875rem;">1. Deskripsi Temuan Safety (Unsafe Condition):</span>
+                    <div class="text-dark fw-semibold">{{ finding.temuan }}</div>
+                </div>
+
+                <div class="p-3 bg-light border rounded">
+                    <span class="fw-bold text-secondary text-uppercase d-block mb-1" style="font-size: 0.6875rem;">2. Potensi Bahaya & Risiko (Hazard):</span>
+                    <div class="text-dark">{{ finding.potensi or '-' }}</div>
+                </div>
+
+                <div class="p-3 bg-light border rounded">
+                    <span class="fw-bold text-secondary text-uppercase d-block mb-1" style="font-size: 0.6875rem;">3. Tindakan Perbaikan (Countermeasure):</span>
+                    <div class="text-dark">{{ finding.perbaikan or '-' }}</div>
+                </div>
+
+                <div class="row g-2 text-muted" style="font-size: 0.75rem;">
+                    <div class="col-4 p-2 bg-light border rounded">Due Date: <strong class="text-dark d-block">{{ finding.dudate or '-' }}</strong></div>
+                    <div class="col-4 p-2 bg-light border rounded">
+                        Fix (Deskripsi Perbaikan): <strong class="text-success d-block">{{ finding.fix_date or '-' }}</strong>
+                        {% if finding.foto_fix %}
+                            <div class="mt-1">
+                                <a href="{{ url_for('uploaded_file', filename=finding.foto_fix) }}" target="_blank" class="text-decoration-none d-inline-flex align-items-center gap-1 text-primary fw-semibold" style="font-size: 0.7rem;">
+                                    <svg width="12" height="12" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                                    <span>Lihat Foto Fix</span>
+                                </a>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="col-4 p-2 bg-light border rounded">PIC: <strong class="text-dark d-block">{{ finding.pic or '-' }}</strong></div>
+                </div>
+            </div>
+
+            <!-- Signatures / Kolom Verifikasi -->
+            <div class="pt-4 border-top">
+                <div class="text-center fw-bold text-secondary text-uppercase mb-3" style="font-size: 0.75rem; letter-spacing: 0.05em;">
+                    Kolom Tanda Tangan & Verifikasi Genba
+                </div>
+                <div class="row g-3 text-center" style="font-size: 0.75rem;">
+                    <div class="col-4">
+                        <div class="border rounded p-2 bg-light">
+                            <span class="fw-bold text-secondary d-block">Auditor Genba</span>
+                            <div style="height: 60px;"></div>
+                            <div class="border-top pt-1 text-muted">( ........................................ )</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded p-2 bg-light">
+                            <span class="fw-bold text-secondary d-block">PIC Perbaikan</span>
+                            <div class="d-flex align-items-center justify-content-center fw-bold text-dark" style="height: 60px;">
+                                {{ finding.pic or '' }}
+                            </div>
+                            <div class="border-top pt-1 text-muted">( ........................................ )</div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="border rounded p-2 bg-light">
+                            <span class="fw-bold text-secondary d-block">Section Head / Safety</span>
+                            <div class="d-flex align-items-center justify-content-center fw-bold text-success" style="height: 60px;">
+                                {% if finding.judg == 'OK' %}VERIFIED OK{% endif %}
+                            </div>
+                            <div class="border-top pt-1 text-muted">( ........................................ )</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+</div>
+{% endblock %}

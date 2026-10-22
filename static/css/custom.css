@@ -1,0 +1,260 @@
+/* ==========================================================================
+   PT. FUJISEAT INDONESIA - SAFETY GENBA D26A SYSTEM
+   Standalone Corporate Industrial Styling (100% Offline First)
+   ========================================================================== */
+
+:root {
+  --fuji-navy: #0f172a;
+  --fuji-blue: #1e3a8a;
+  --fuji-accent: #2563eb;
+  --fuji-border: #cbd5e1;
+  --fuji-header-gray: #d9d9d9;
+}
+
+body {
+  background-color: #f1f5f9;
+  color: #1e293b;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+  font-size: 0.8125rem;
+  line-height: 1.45;
+}
+
+/* Global SVG Safety Constraint (Prevents giant icons) */
+svg {
+  width: 16px;
+  height: 16px;
+  max-width: 100%;
+  display: inline-block;
+  vertical-align: middle;
+  flex-shrink: 0;
+}
+
+svg.icon-lg {
+  width: 20px;
+  height: 20px;
+}
+
+svg.icon-xl {
+  width: 24px;
+  height: 24px;
+}
+
+svg.icon-sm {
+  width: 14px;
+  height: 14px;
+}
+
+/* Corporate Top Navigation */
+.fuji-navbar {
+  position: sticky;
+  top: 0;
+  z-index: 1030;
+  background-color: #0f172a;
+  border-bottom: 2px solid #1e3a8a;
+  padding: 0.5rem 1rem;
+}
+
+.nav-btn-dashboard {
+  background-color: #1e293b;
+  color: #ffffff;
+  border: 1px solid #334155;
+  font-size: 0.75rem;
+  font-weight: 600;
+  letter-spacing: 0.025em;
+  transition: all 0.15s ease-in-out;
+}
+
+.nav-btn-dashboard:hover {
+  background-color: #334155;
+  border-color: #475569;
+  color: #ffffff;
+}
+
+.nav-btn-dashboard svg {
+  color: #60a5fa;
+}
+
+.brand-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  background-color: #1e3a8a;
+  color: #ffffff;
+  font-weight: 800;
+  font-size: 0.75rem;
+  letter-spacing: 0.05em;
+  border-radius: 4px;
+  border: 1px solid #3b82f6;
+}
+
+/* Dense Professional Manufacturing Tables */
+.table-genba {
+  border-collapse: separate;
+  border-spacing: 0;
+  width: 100%;
+  font-size: 0.75rem;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+}
+
+.table-genba thead th {
+  background-color: #d9d9d9 !important;
+  color: #000000 !important;
+  font-weight: 700;
+  text-align: center;
+  vertical-align: middle;
+  padding: 6px 8px;
+  border-right: 1px solid #94a3b8;
+  border-bottom: 2px solid #64748b;
+  white-space: nowrap;
+}
+
+.table-genba thead th:last-child {
+  border-right: none;
+}
+
+.table-genba tbody td {
+  padding: 5px 6px;
+  border-right: 1px solid #e2e8f0;
+  border-bottom: 1px solid #cbd5e1;
+  vertical-align: middle;
+  color: #1e293b;
+  word-break: break-word;
+}
+
+.table-genba tbody td:last-child {
+  border-right: none;
+}
+
+.table-genba tbody tr:hover {
+  background-color: #f8fafc;
+}
+
+/* Status Badges */
+.badge-ok {
+  background-color: #dcfce7;
+  color: #166534;
+  border: 1px solid #86efac;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 0.7rem;
+}
+
+.badge-progress {
+  background-color: #fef3c7;
+  color: #854d0e;
+  border: 1px solid #fde047;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  display: inline-block;
+  font-size: 0.7rem;
+}
+
+.badge-line {
+  background-color: #1e3a8a;
+  color: #ffffff;
+  font-weight: 700;
+  padding: 2px 6px;
+  border-radius: 3px;
+  font-size: 0.7rem;
+}
+
+/* Metric KPI Cards */
+.card-kpi {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 0.75rem 1rem;
+}
+
+.card-kpi .kpi-label {
+  font-size: 0.6875rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  color: #64748b;
+  letter-spacing: 0.05em;
+  margin-bottom: 0.25rem;
+}
+
+.card-kpi .kpi-value {
+  font-size: 1.5rem;
+  font-weight: 800;
+  line-height: 1;
+  color: #0f172a;
+}
+
+/* Form Styles */
+.form-section-box {
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 4px;
+  padding: 1rem;
+  margin-bottom: 1rem;
+}
+
+.form-section-title {
+  font-size: 0.75rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: #0f172a;
+  border-bottom: 1px solid #e2e8f0;
+  padding-bottom: 0.5rem;
+  margin-bottom: 0.75rem;
+  display: flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.form-control, .form-select {
+  font-size: 0.8125rem;
+  border-radius: 4px;
+  border: 1px solid #cbd5e1;
+}
+
+.form-control:focus, .form-select:focus {
+  border-color: #1e3a8a;
+  box-shadow: 0 0 0 2px rgba(30, 58, 138, 0.15);
+}
+
+/* Image Previews */
+.thumbnail-box {
+  width: 65px;
+  height: 44px;
+  background-color: #000000;
+  border: 1px solid #cbd5e1;
+  border-radius: 3px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
+.thumbnail-box img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  transition: opacity 0.15s;
+}
+
+.thumbnail-box:hover img {
+  opacity: 0.85;
+}
+
+/* Print Styles */
+@media print {
+  .no-print {
+    display: none !important;
+  }
+  body {
+    background: #ffffff !important;
+    color: #000000 !important;
+  }
+}

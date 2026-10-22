@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}PT. FUJISEAT INDONESIA - Safety Genba D26A{% endblock %}</title>
+    <!-- 100% Offline Local Assets (No external CDN required) -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/bootstrap.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/sweetalert2.min.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/custom.css') }}">
+</head>
+<body class="d-flex flex-column min-vh-100">
+
+    <!-- Top Corporate Navbar (Sticky on Scroll) -->
+    <header class="fuji-navbar sticky-top no-print shadow-sm">
+        <div class="container-fluid px-3 px-lg-4 d-flex align-items-center justify-content-between">
+            
+            <!-- Brand -->
+            <a href="{{ url_for('index') }}" class="d-flex align-items-center text-decoration-none text-white gap-2">
+                <img src="{{ url_for('static', filename='images/logo.png') }}" alt="PT Fujiseat Indonesia" style="height: 32px; max-width: 140px; object-fit: contain;" class="bg-white rounded px-1.5 py-0.5 shadow-sm">
+                <div class="d-flex flex-column">
+                    <span class="fw-bold text-uppercase tracking-wider" style="font-size: 0.85rem; letter-spacing: 0.05em;">PT. FUJISEAT INDONESIA</span>
+                    <span class="text-secondary" style="font-size: 0.6875rem;">Plant D26A Genba Safety & Near Miss System</span>
+                </div>
+            </a>
+
+            <!-- Navigation Links -->
+            <nav class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('index') }}" class="btn btn-sm nav-btn-dashboard d-flex align-items-center" style="font-size: 0.75rem;" title="Ke Halaman Dashboard">
+                    <svg width="14" height="14" class="me-2" fill="none" stroke="currentColor" viewBox="0 0 24 24" style="color: #60a5fa; flex-shrink: 0;">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+                    </svg>
+                    <span class="fw-semibold">Dashboard</span>
+                </a>
+
+                <a href="{{ url_for('input_finding') }}" class="btn btn-sm btn-primary d-flex align-items-center gap-1.5" style="background-color: #2563eb; border-color: #1d4ed8; font-size: 0.75rem;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/>
+                    </svg>
+                    <span class="fw-semibold">Input Temuan</span>
+                </a>
+
+                <!-- Export Excel Dropdown -->
+                <div class="dropdown">
+                    <button class="btn btn-sm btn-success dropdown-toggle d-flex align-items-center gap-1.5" type="button" data-bs-toggle="dropdown" aria-expanded="false" style="background-color: #15803d; border-color: #166534; font-size: 0.75rem;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                        </svg>
+                        <span>Export Excel (.xlsx)</span>
+                    </button>
+                    <ul class="dropdown-menu dropdown-menu-end shadow-sm" style="font-size: 0.75rem;">
+                        <li><h6 class="dropdown-header text-uppercase fw-bold" style="font-size: 0.6875rem;">Pilihan Periode Export:</h6></li>
+                        <li><a class="dropdown-item" href="{{ url_for('export_excel', period_type='month') }}">Export Bulan Ini (Bulanan)</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('export_excel', period_type='week') }}">Export Minggu Ini (Mingguan)</a></li>
+                        <li><a class="dropdown-item" href="{{ url_for('export_excel', period_type='year') }}">Export Tahun Ini (Tahunan)</a></li>
+                        <li><hr class="dropdown-divider my-1"></li>
+                        <li><a class="dropdown-item fw-semibold text-primary" href="{{ url_for('export_excel', period_type='all') }}">Export Semua Data (Master)</a></li>
+                    </ul>
+                </div>
+
+                <button type="button" class="btn btn-sm btn-secondary d-flex align-items-center gap-1.5" data-bs-toggle="modal" data-bs-target="#importModal" style="font-size: 0.75rem;">
+                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/>
+                    </svg>
+                    <span>Import Excel</span>
+                </button>
+            </nav>
+
+        </div>
+    </header>
+
+    <!-- Flash Alerts -->
+    <div class="container-fluid px-3 px-lg-4 mt-3 no-print">
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{% if category == 'success' %}success{% elif category == 'danger' %}danger{% elif category == 'warning' %}warning{% else %}primary{% endif %} alert-dismissible fade show py-2 px-3 d-flex align-items-center justify-content-between mb-2" role="alert" style="font-size: 0.8125rem;">
+                        <div class="d-flex align-items-center gap-2">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"/>
+                            </svg>
+                            <span>{{ message }}</span>
+                        </div>
+                        <button type="button" class="btn-close py-2" data-bs-dismiss="alert" aria-label="Close"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+    </div>
+
+    <!-- Main Content Body -->
+    <main class="container-fluid px-3 px-lg-4 py-3 flex-grow-1">
+        {% block content %}{% endblock %}
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-top py-2 mt-auto text-muted no-print" style="font-size: 0.75rem;">
+        <div class="container-fluid px-3 px-lg-4 d-flex flex-column flex-sm-row justify-content-between align-items-center">
+            <span>&copy; 2026 PT. FUJISEAT INDONESIA &bull; Genba D26A Safety Monitoring System</span>
+            <span>Sistem Berjalan 100% Lokal (Offline Ready)</span>
+        </div>
+    </footer>
+
+    <!-- Import Excel Modal (Bootstrap 5 Standard Modal) -->
+    <div class="modal fade" id="importModal" tabindex="-1" aria-labelledby="importModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content border-0 shadow">
+                <div class="modal-header py-2 px-3 bg-dark text-white">
+                    <h5 class="modal-title fs-6 fw-bold" id="importModalLabel">Import Data dari Excel / CSV</h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <form action="{{ url_for('import_excel') }}" method="POST" enctype="multipart/form-data">
+                    <div class="modal-body p-3">
+                        <div class="p-4 border rounded text-center bg-light">
+                            <svg width="32" height="32" class="text-secondary mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/>
+                            </svg>
+                            <label for="excelFileInput" class="d-block fw-semibold text-primary mb-1" style="cursor: pointer;">
+                                Klik untuk memilih file Excel (.xlsx / .csv)
+                            </label>
+                            <span class="text-muted d-block" style="font-size: 0.75rem;">Mendukung format kolom laporan Genba D26A</span>
+                            <input type="file" name="file" id="excelFileInput" accept=".xlsx, .xls, .csv" required class="form-control form-control-sm mt-3" onchange="document.getElementById('selectedFileName').textContent = this.files[0]?.name || ''">
+                            <div id="selectedFileName" class="text-success fw-bold mt-2" style="font-size: 0.75rem;"></div>
+                        </div>
+                    </div>
+                    <div class="modal-footer py-2 px-3">
+                        <button type="button" class="btn btn-sm btn-outline-secondary" data-bs-dismiss="modal">Batal</button>
+                        <button type="submit" class="btn btn-sm btn-primary">Mulai Import</button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 Bundle JS (Offline Local) -->
+    <script src="{{ url_for('static', filename='js/bootstrap.bundle.min.js') }}"></script>
+
+    <!-- SweetAlert2 (Offline Local) -->
+    <script src="{{ url_for('static', filename='js/sweetalert2.all.min.js') }}"></script>
+
+    <script>
+        // SweetAlert2 Toast Mixin (Top-Right notification)
+        const Toast = Swal.mixin({
+            toast: true,
+            position: 'top-end',
+            showConfirmButton: false,
+            timer: 3500,
+            timerProgressBar: true,
+            didOpen: (toast) => {
+                toast.addEventListener('mouseenter', Swal.stopTimer);
+                toast.addEventListener('mouseleave', Swal.resumeTimer);
+            }
+        });
+
+        // Global SweetAlert Delete Confirmation
+        function confirmDelete(event, formElement) {
+            if (event) {
+                event.preventDefault();
+                event.stopPropagation();
+            }
+            Swal.fire({
+                title: 'Hapus Temuan Safety?',
+                text: 'Data temuan yang dihapus tidak dapat dipulihkan kembali.',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#dc2626',
+                cancelButtonColor: '#64748b',
+                confirmButtonText: 'Ya, Hapus Data',
+                cancelButtonText: 'Batal',
+                reverseButtons: true,
+                focusCancel: true
+            }).then((result) => {
+                if (result.isConfirmed) {
+                    Toast.fire({
+                        icon: 'info',
+                        title: 'Menghapus data temuan...'
+                    });
+                    formElement.submit();
+                }
+            });
+        }
+    </script>
+
+    <!-- Trigger Toast Alert on Flask Flash Messages -->
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            <script>
+                document.addEventListener('DOMContentLoaded', function() {
+                    {% for category, message in messages %}
+                        Toast.fire({
+                            icon: '{{ "success" if category == "success" else ("error" if category in ["danger", "error"] else ("warning" if category == "warning" else "info")) }}',
+                            title: {{ message|tojson }}
+                        });
+                    {% endfor %}
+                });
+            </script>
+        {% endif %}
+    {% endwith %}
+</body>
+</html>
