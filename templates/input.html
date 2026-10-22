@@ -35,41 +35,55 @@
             <form action="{{ url_for('input_finding') }}" method="POST" enctype="multipart/form-data" class="card-body p-3 p-md-4" onsubmit="confirmSaveInput(event, this)">
 
                 <!-- 1. FOTO TEMUAN SAFETY -->
+                <!-- 1. FOTO TEMUAN SAFETY (WAJIB) -->
                 <div class="form-section-box">
-                    <div class="form-section-title">
-                        <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
-                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
-                        </svg>
-                        <span>1. Foto Temuan Safety</span>
+                    <div class="form-section-title d-flex justify-content-between align-items-center">
+                        <div class="d-flex align-items-center gap-1.5">
+                            <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                            </svg>
+                            <span>1. Foto Temuan Safety <span class="text-danger">* (Wajib Diisi)</span></span>
+                        </div>
+                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle" style="font-size: 0.65rem;">Wajib Ada Foto</span>
                     </div>
 
                     <input type="file" id="fotoSebelumInput" name="foto_sebelum" accept="image/*" class="d-none" onchange="handleFileSelect(this)">
+                    <input type="file" id="fotoSebelumNativeInput" accept="image/*" capture="environment" class="d-none" onchange="handleNativeCameraSelect(this, 'foto_sebelum')">
 
                     <div class="row g-3 align-items-center">
                         <div class="col-12 col-md-5">
-                            <p class="text-muted mb-3" style="font-size: 0.75rem;">
+                            <p class="text-muted mb-2" style="font-size: 0.75rem;">
                                 Ambil foto langsung saat inspeksi genba menggunakan kamera perangkat (HP / Laptop) atau pilih file dari galeri.
                             </p>
                             
                             <div class="d-flex flex-column gap-2">
-                                <button type="button" onclick="startCameraModal()" class="btn btn-sm btn-primary d-flex align-items-center justify-content-center gap-2">
+                                <button type="button" onclick="startCameraModal('foto_sebelum')" class="btn btn-sm btn-primary d-flex align-items-center justify-content-center gap-2">
                                     <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/>
                                     </svg>
                                     <span class="fw-semibold">Buka Kamera (Laptop / HP)</span>
                                 </button>
 
-                                <button type="button" onclick="document.getElementById('fotoSebelumInput').click()" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center gap-2">
-                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                    </svg>
-                                    <span>Pilih dari File / Galeri</span>
-                                </button>
+                                <div class="d-flex gap-2">
+                                    <button type="button" onclick="document.getElementById('fotoSebelumNativeInput').click()" class="btn btn-sm btn-outline-primary flex-fill d-flex align-items-center justify-content-center gap-1.5" title="Buka aplikasi kamera bawaan HP">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                                        </svg>
+                                        <span>Kamera HP</span>
+                                    </button>
+
+                                    <button type="button" onclick="document.getElementById('fotoSebelumInput').click()" class="btn btn-sm btn-outline-secondary flex-fill d-flex align-items-center justify-content-center gap-1.5">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                        </svg>
+                                        <span>Dari Galeri</span>
+                                    </button>
+                                </div>
                             </div>
 
                             <div id="fileStatusText" class="mt-2 text-muted" style="font-size: 0.75rem;">
-                                Status: <em>Belum ada foto</em>
+                                Status: <em class="text-danger">Wajib diunggah sebelum simpan</em>
                             </div>
                         </div>
 
@@ -79,7 +93,7 @@
                                     <svg width="32" height="32" class="mb-1 text-secondary opacity-50" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
                                     </svg>
-                                    <div style="font-size: 0.75rem;">Pratinjau Foto Temuan Safety</div>
+                                    <div style="font-size: 0.75rem;">Pratinjau Foto Temuan Safety <span class="text-danger">*</span></div>
                                 </div>
                                 <img id="imagePreview" src="#" alt="Preview" class="d-none w-100 h-100 object-fit-contain">
                                 <button type="button" id="removePhotoBtn" onclick="removePhoto()" class="d-none btn btn-sm btn-danger position-absolute top-0 end-0 m-2 py-0 px-1" title="Hapus Foto">
@@ -124,7 +138,7 @@
                     </div>
                 </div>
 
-                <!-- 3. URAIAN TEMUAN SAFETY, POTENSI BAHAYA & PERBAIKAN -->
+                <!-- 3. URAIAN TEMUAN SAFETY, POTENSI BAHAYA & RENCANA PENANGANAN -->
                 <div class="form-section-box">
                     <div class="form-section-title">
                         <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -135,9 +149,9 @@
 
                     <div class="mb-3">
                         <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Deskripsi Temuan Safety (Unsafe Condition) <span class="text-danger">*</span></label>
-                        <textarea name="temuan" id="inputTemuan" rows="3" required minlength="5" placeholder="Tuliskan kondisi tidak aman yang ditemukan secara jelas (minimal 5 karakter, contoh: Tas pribadi di area bawah mesin, Kabel mengelupas, Baud berada di atas meja...)" class="form-control form-control-sm"></textarea>
+                        <textarea name="temuan" id="inputTemuan" rows="3" required placeholder="Tuliskan kondisi tidak aman yang ditemukan secara jelas (contoh: Tas pribadi di area bawah mesin, Kabel mengelupas, Baud berada di atas meja...)" class="form-control form-control-sm"></textarea>
                         <div class="d-flex justify-content-between mt-1">
-                            <span class="text-muted" style="font-size: 0.7rem;">Minimal 5 karakter deskripsi yang bermakna.</span>
+                            <span class="text-muted" style="font-size: 0.7rem;">Tuliskan deskripsi kondisi tidak aman secara jelas.</span>
                             <span id="charCountTemuan" class="text-muted" style="font-size: 0.7rem;">0 karakter</span>
                         </div>
                     </div>
@@ -226,19 +240,34 @@
 
                         <div class="col-12 col-md-5">
                             <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">
-                                Foto Bukti Fix <span class="text-muted fw-normal">(Opsional)</span>
+                                Foto Bukti Fix <span class="badge bg-secondary-subtle text-secondary border py-0 px-1" style="font-size: 0.65rem;">Opsional</span>
                             </label>
                             <div class="d-flex gap-2 align-items-center">
-                                <div class="border rounded bg-dark d-flex align-items-center justify-content-center overflow-hidden position-relative" style="width: 85px; height: 60px; flex-shrink: 0;">
-                                    <span id="noInputFixText" class="text-muted text-center" style="font-size: 0.65rem;">Belum ada</span>
+                                <div class="border rounded bg-dark d-flex align-items-center justify-content-center overflow-hidden position-relative" style="width: 95px; height: 70px; flex-shrink: 0;">
+                                    <span id="noInputFixText" class="text-muted text-center p-1" style="font-size: 0.65rem;">Belum ada</span>
                                     <img id="previewInputFix" src="#" alt="Preview Fix" class="d-none w-100 h-100 object-fit-contain">
+                                    <button type="button" id="removeFixPhotoBtn" onclick="removeFixPhoto()" class="d-none btn btn-sm btn-danger position-absolute top-0 end-0 m-1 py-0 px-1" title="Hapus Foto Fix">
+                                        <svg width="10" height="10" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/></svg>
+                                    </button>
                                 </div>
                                 <div class="d-flex flex-column gap-1 flex-grow-1">
-                                    <input type="file" id="fotoFixInput" name="foto_fix" accept="image/*" class="d-none" onchange="previewFile(this, 'previewInputFix', 'noInputFixText')">
-                                    <button type="button" onclick="document.getElementById('fotoFixInput').click()" class="btn btn-sm btn-outline-secondary d-flex align-items-center justify-content-center gap-1 py-1" style="font-size: 0.75rem;">
-                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
-                                        <span>+ Foto Fix (Opsional)</span>
+                                    <input type="file" id="fotoFixInput" name="foto_fix" accept="image/*" class="d-none" onchange="handleFixFileSelect(this)">
+                                    <input type="file" id="fotoFixNativeInput" accept="image/*" capture="environment" class="d-none" onchange="handleNativeCameraSelect(this, 'foto_fix')">
+                                    
+                                    <button type="button" onclick="startCameraModal('foto_fix')" class="btn btn-sm btn-outline-primary d-flex align-items-center justify-content-center gap-1.5 py-1" style="font-size: 0.75rem;">
+                                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>
+                                        <span class="fw-semibold">Buka Kamera Fix</span>
                                     </button>
+
+                                    <div class="d-flex gap-1">
+                                        <button type="button" onclick="document.getElementById('fotoFixNativeInput').click()" class="btn btn-sm btn-outline-secondary flex-fill py-1" style="font-size: 0.7rem;" title="Kamera Bawaan HP">
+                                            Kamera HP
+                                        </button>
+                                        <button type="button" onclick="document.getElementById('fotoFixInput').click()" class="btn btn-sm btn-outline-secondary flex-fill py-1" style="font-size: 0.7rem;">
+                                            Dari Galeri
+                                        </button>
+                                    </div>
+                                    <div id="fileFixStatusText" class="text-muted" style="font-size: 0.6875rem;"></div>
                                 </div>
                             </div>
                         </div>
@@ -261,47 +290,48 @@
 </div>
 
 <!-- ======================================================== -->
-<!-- LIVE CAMERA VIEWFINDER MODAL (LAPTOP & PHONE)           -->
+<!-- LIVE CAMERA VIEWFINDER MODAL (LOCKED - TIDAK BISA DIGESER) -->
 <!-- ======================================================== -->
-<div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content bg-dark text-white border-0 shadow-lg">
-            <div class="modal-header py-2 px-3 border-secondary">
+<div class="modal fade" id="cameraModal" tabindex="-1" aria-labelledby="cameraModalLabel" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark text-white border-0 shadow-lg overflow-hidden">
+            <div class="modal-header py-2 px-3 border-secondary d-flex align-items-center justify-content-between">
                 <div class="d-flex align-items-center gap-2">
                     <span class="badge bg-danger rounded-circle p-1"></span>
-                    <h6 class="modal-title fs-6 fw-bold" id="cameraModalLabel">Kamera Langsung Perangkat</h6>
+                    <h6 class="modal-title fs-6 fw-bold mb-0" id="cameraModalLabel">Kamera Langsung Perangkat</h6>
                 </div>
                 <button type="button" class="btn-close btn-close-white" onclick="closeCameraModal()"></button>
             </div>
             
-            <div class="modal-body p-0 position-relative bg-black d-flex align-items-center justify-content-center" style="min-height: 280px; max-height: 70vh;">
-                <video id="cameraVideo" autoplay playsinline class="w-100 h-100 object-fit-cover"></video>
+            <div class="modal-body p-0 camera-viewfinder-container">
+                <video id="cameraVideo" autoplay playsinline muted class="camera-viewfinder-video"></video>
                 <canvas id="cameraCanvas" class="d-none"></canvas>
 
                 <!-- Camera Error Alert Box -->
-                <div id="cameraErrorBox" class="d-none position-absolute inset-0 p-4 text-center bg-dark w-100 h-100 d-flex flex-column align-items-center justify-content-center">
+                <div id="cameraErrorBox" class="d-none position-absolute inset-0 p-4 text-center bg-dark w-100 h-100 d-flex flex-column align-items-center justify-content-center" style="z-index: 20;">
                     <svg width="32" height="32" class="text-danger mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/>
                     </svg>
                     <p id="cameraErrorMessage" class="small text-secondary mb-3"></p>
-                    <button type="button" onclick="document.getElementById('fotoSebelumInput').click(); closeCameraModal();" class="btn btn-sm btn-primary">
+                    <button type="button" onclick="triggerManualFallback()" class="btn btn-sm btn-primary">
                         Pilih File Foto Manual
                     </button>
                 </div>
             </div>
 
-            <div class="modal-footer py-2 px-3 border-secondary d-flex justify-content-between">
-                <button type="button" onclick="switchCameraMode()" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1">
-                    <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
-                    <span>Putar Kamera</span>
+            <div class="modal-footer camera-modal-footer d-flex justify-content-between align-items-center">
+                <button type="button" onclick="switchCameraMode()" class="btn btn-sm btn-outline-light d-flex align-items-center gap-1.5" title="Ganti Kamera Depan / Belakang">
+                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/></svg>
+                    <span class="d-none d-sm-inline">Putar Kamera</span>
                 </button>
 
-                <button type="button" onclick="captureSnapshot()" class="btn btn-danger btn-sm px-4 fw-bold d-flex align-items-center gap-1.5 shadow">
-                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <!-- Prominent Red Shutter Button (Always Visible) -->
+                <button type="button" onclick="captureSnapshot()" class="btn btn-danger px-4 py-2 fw-bold d-flex align-items-center gap-2 shadow rounded-pill">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
                     </svg>
-                    <span>Jepret Foto</span>
+                    <span class="fs-6">Jepret Foto</span>
                 </button>
 
                 <button type="button" class="btn btn-sm btn-secondary" onclick="closeCameraModal()">Tutup</button>
@@ -314,8 +344,15 @@
     let cameraStream = null;
     let cameraModalInstance = null;
     let currentFacingMode = 'environment';
+    let activeCameraTarget = 'foto_sebelum'; // 'foto_sebelum' or 'foto_fix'
 
-    async function startCameraModal() {
+    async function startCameraModal(target = 'foto_sebelum') {
+        activeCameraTarget = target;
+        const modalTitle = document.getElementById('cameraModalLabel');
+        if (modalTitle) {
+            modalTitle.textContent = (target === 'foto_fix') ? 'Kamera Langsung - Foto Bukti Fix' : 'Kamera Langsung - Foto Temuan Safety';
+        }
+
         const errorBox = document.getElementById('cameraErrorBox');
         const errorMsg = document.getElementById('cameraErrorMessage');
         const video = document.getElementById('cameraVideo');
@@ -358,7 +395,16 @@
 
     function switchCameraMode() {
         currentFacingMode = (currentFacingMode === 'environment') ? 'user' : 'environment';
-        startCameraModal();
+        startCameraModal(activeCameraTarget);
+    }
+
+    function triggerManualFallback() {
+        closeCameraModal();
+        if (activeCameraTarget === 'foto_fix') {
+            document.getElementById('fotoFixInput').click();
+        } else {
+            document.getElementById('fotoSebelumInput').click();
+        }
     }
 
     function captureSnapshot() {
@@ -373,18 +419,29 @@
 
         canvas.toBlob((blob) => {
             if (!blob) return;
-            const file = new File([blob], `genba_${Date.now()}.jpg`, { type: 'image/jpeg' });
+            const filename = (activeCameraTarget === 'foto_fix') ? `fix_${Date.now()}.jpg` : `temuan_${Date.now()}.jpg`;
+            const file = new File([blob], filename, { type: 'image/jpeg' });
             
             const dataTransfer = new DataTransfer();
             dataTransfer.items.add(file);
-            document.getElementById('fotoSebelumInput').files = dataTransfer.files;
 
-            const preview = document.getElementById('imagePreview');
-            preview.src = canvas.toDataURL('image/jpeg');
-            preview.classList.remove('d-none');
-            document.getElementById('previewPlaceholder').classList.add('d-none');
-            document.getElementById('removePhotoBtn').classList.remove('d-none');
-            document.getElementById('fileStatusText').innerHTML = `<span class="text-success fw-bold">Foto Berhasil Dijepret (${file.name})</span>`;
+            if (activeCameraTarget === 'foto_fix') {
+                document.getElementById('fotoFixInput').files = dataTransfer.files;
+                const preview = document.getElementById('previewInputFix');
+                preview.src = canvas.toDataURL('image/jpeg');
+                preview.classList.remove('d-none');
+                document.getElementById('noInputFixText').classList.add('d-none');
+                document.getElementById('removeFixPhotoBtn').classList.remove('d-none');
+                document.getElementById('fileFixStatusText').innerHTML = `<span class="text-success fw-bold">Foto Fix Dijepret</span>`;
+            } else {
+                document.getElementById('fotoSebelumInput').files = dataTransfer.files;
+                const preview = document.getElementById('imagePreview');
+                preview.src = canvas.toDataURL('image/jpeg');
+                preview.classList.remove('d-none');
+                document.getElementById('previewPlaceholder').classList.add('d-none');
+                document.getElementById('removePhotoBtn').classList.remove('d-none');
+                document.getElementById('fileStatusText').innerHTML = `<span class="text-success fw-bold">Foto Temuan Dijepret (${file.name})</span>`;
+            }
 
             closeCameraModal();
         }, 'image/jpeg', 0.9);
@@ -416,19 +473,47 @@
         }
     }
 
-    function previewFile(input, imgId, textId) {
+    function handleFixFileSelect(input) {
         if (input.files && input.files[0]) {
+            const file = input.files[0];
             const reader = new FileReader();
             reader.onload = function(e) {
-                const img = document.getElementById(imgId);
-                if (img) {
-                    img.src = e.target.result;
-                    img.classList.remove('d-none');
-                }
-                const textElem = document.getElementById(textId);
-                if (textElem) textElem.classList.add('d-none');
+                const preview = document.getElementById('previewInputFix');
+                preview.src = e.target.result;
+                preview.classList.remove('d-none');
+                document.getElementById('noInputFixText').classList.add('d-none');
+                document.getElementById('removeFixPhotoBtn').classList.remove('d-none');
+                document.getElementById('fileFixStatusText').innerHTML = `<span class="text-success fw-bold">${file.name}</span>`;
             };
-            reader.readAsDataURL(input.files[0]);
+            reader.readAsDataURL(file);
+        }
+    }
+
+    function handleNativeCameraSelect(input, target) {
+        if (input.files && input.files[0]) {
+            const file = input.files[0];
+            const dataTransfer = new DataTransfer();
+            dataTransfer.items.add(file);
+
+            if (target === 'foto_fix') {
+                document.getElementById('fotoFixInput').files = dataTransfer.files;
+                handleFixFileSelect(document.getElementById('fotoFixInput'));
+            } else {
+                document.getElementById('fotoSebelumInput').files = dataTransfer.files;
+                handleFileSelect(document.getElementById('fotoSebelumInput'));
+            }
+        }
+    }
+
+    function removeFixPhoto() {
+        document.getElementById('fotoFixInput').value = "";
+        const preview = document.getElementById('previewInputFix');
+        preview.src = "#";
+        preview.classList.add('d-none');
+        document.getElementById('noInputFixText').classList.remove('d-none');
+        document.getElementById('removeFixPhotoBtn').classList.add('d-none');
+        document.getElementById('fileFixStatusText').innerHTML = ``;
+    }
         }
     }
 
@@ -496,7 +581,7 @@
             temuanEl.addEventListener('input', function() {
                 const len = this.value.trim().length;
                 charCountEl.textContent = `${len} karakter`;
-                if (len >= 5) {
+                if (len >= 3) {
                     charCountEl.className = 'text-success fw-bold';
                     temuanEl.classList.remove('is-invalid');
                 } else {
@@ -508,6 +593,19 @@
 
     function confirmSaveInput(event, form) {
         event.preventDefault();
+
+        // 0. Validasi Foto Temuan (Wajib)
+        const fotoSebelumInput = document.getElementById('fotoSebelumInput');
+        if (!fotoSebelumInput.files || fotoSebelumInput.files.length === 0) {
+            Swal.fire({
+                icon: 'warning',
+                title: 'Foto Temuan Wajib Diunggah',
+                text: 'Silakan ambil foto temuan menggunakan kamera atau pilih dari galeri terlebih dahulu.',
+                confirmButtonColor: '#1e3a8a'
+            });
+            document.getElementById('fileStatusText')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+            return false;
+        }
 
         // 1. Validasi Pos
         const posInput = form.querySelector('[name="pos"]');
@@ -538,15 +636,15 @@
             return false;
         }
 
-        // 3. Validasi Temuan (Minimal 5 karakter & bermakna)
+        // 3. Validasi Temuan (Deskripsi jelas bermakna)
         const temuanInput = form.querySelector('[name="temuan"]');
         const temuanVal = temuanInput ? temuanInput.value.trim() : '';
         const cleanTemuan = temuanVal.replace(/[\s\-_.,]/g, '');
-        if (!temuanVal || temuanVal.length < 5 || cleanTemuan.length < 3) {
+        if (!temuanVal || cleanTemuan.length < 3) {
             Swal.fire({
                 icon: 'warning',
-                title: 'Deskripsi Temuan Tidak Valid',
-                text: 'Deskripsi temuan safety minimal 5 karakter bermakna. Tidak boleh hanya simbol acak.',
+                title: 'Deskripsi Temuan Wajib Diisi',
+                text: 'Silakan tuliskan deskripsi kondisi tidak aman secara jelas.',
                 confirmButtonColor: '#1e3a8a'
             });
             temuanInput?.classList.add('is-invalid');

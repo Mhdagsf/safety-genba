@@ -105,8 +105,8 @@ def input_finding():
 
         # Validasi server-side ketat
         clean_temuan = re.sub(r'[\s\-_.,]', '', temuan)
-        if len(temuan) < 5 or len(clean_temuan) < 3:
-            flash('Deskripsi temuan safety minimal 5 karakter bermakna!', 'danger')
+        if len(temuan) < 3 or len(clean_temuan) < 2:
+            flash('Deskripsi temuan safety tidak boleh kosong dan harus jelas!', 'danger')
             return redirect(url_for('input_finding'))
 
         if not pos or len(pos) < 1:
@@ -127,6 +127,9 @@ def input_finding():
 
         foto_sebelum_file = request.files.get('foto_sebelum')
         foto_sebelum_name = save_uploaded_file(foto_sebelum_file)
+        if not foto_sebelum_name:
+            flash('Foto temuan safety wajib diisi / diunggah!', 'danger')
+            return redirect(url_for('input_finding'))
 
         foto_sesudah_file = request.files.get('foto_sesudah')
         foto_sesudah_name = save_uploaded_file(foto_sesudah_file)
@@ -179,8 +182,8 @@ def edit_finding(finding_id):
 
         # Validasi server-side
         clean_temuan = re.sub(r'[\s\-_.,]', '', temuan)
-        if len(temuan) < 5 or len(clean_temuan) < 3:
-            flash('Deskripsi temuan safety minimal 5 karakter bermakna!', 'danger')
+        if len(temuan) < 3 or len(clean_temuan) < 2:
+            flash('Deskripsi temuan safety tidak boleh kosong dan harus jelas!', 'danger')
             return redirect(url_for('edit_finding', finding_id=finding_id))
 
         if not pos or len(pos) < 1:

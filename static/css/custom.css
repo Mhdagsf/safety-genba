@@ -248,6 +248,135 @@ svg.icon-sm {
   opacity: 0.85;
 }
 
+/* Mobile & Tablet Camera Viewfinder (Locked, No Pan/Drag, Buttons Visible) */
+.camera-viewfinder-container {
+  position: relative;
+  width: 100%;
+  height: 52vh;
+  min-height: 260px;
+  max-height: 480px;
+  background-color: #000000;
+  overflow: hidden;
+  touch-action: none;
+  user-select: none;
+  -webkit-user-select: none;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.camera-viewfinder-video {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  pointer-events: none;
+  touch-action: none;
+  user-select: none;
+}
+
+.camera-modal-footer {
+  position: relative;
+  z-index: 1055;
+  background-color: #0f172a;
+  border-top: 1px solid #334155;
+  padding: 0.65rem 1rem;
+}
+
+/* Responsive Corporate Navbar Brand & Hamburger */
+.fuji-navbar .navbar-brand {
+  max-width: calc(100% - 54px);
+  min-width: 0;
+}
+
+.fuji-logo-img {
+  height: 28px;
+  max-width: 38px;
+  object-fit: contain;
+  padding: 2px 4px;
+  flex-shrink: 0;
+}
+
+.fuji-brand-title {
+  font-size: 0.8125rem;
+  letter-spacing: 0.03em;
+  line-height: 1.2;
+}
+
+.fuji-brand-subtitle {
+  font-size: 0.65rem;
+  line-height: 1.15;
+}
+
+.fuji-hamburger-btn {
+  padding: 0.28rem 0.55rem !important;
+  font-size: 0.85rem !important;
+  border-color: #334155 !important;
+  border-radius: 5px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.fuji-hamburger-btn:focus {
+  box-shadow: 0 0 0 2px rgba(96, 165, 250, 0.4) !important;
+}
+
+@media (min-width: 576px) {
+  .fuji-logo-img {
+    height: 32px;
+    max-width: 130px;
+  }
+  .fuji-brand-title {
+    font-size: 0.875rem;
+  }
+  .fuji-brand-subtitle {
+    font-size: 0.6875rem;
+  }
+}
+
+@media (min-width: 992px) {
+  .fuji-navbar .navbar-brand {
+    max-width: none;
+  }
+}
+
+/* Navbar Mobile / Tablet Collapse */
+@media (max-width: 991.98px) {
+  .fuji-navbar .navbar-collapse {
+    background-color: #0f172a;
+    border-radius: 6px;
+    padding: 0.75rem 0.5rem;
+  }
+  .fuji-navbar .btn, .fuji-navbar .dropdown-toggle {
+    font-size: 0.8125rem !important;
+    padding: 0.45rem 0.75rem !important;
+  }
+}
+
+/* Touch Friendly Elements on Mobile */
+@media (max-width: 767.98px) {
+  body {
+    font-size: 0.8125rem;
+  }
+  .card-kpi .kpi-value {
+    font-size: 1.25rem;
+  }
+  .card-kpi .kpi-label {
+    font-size: 0.625rem;
+  }
+  .form-section-box {
+    padding: 0.75rem;
+  }
+  .btn {
+    min-height: 34px;
+  }
+  .table-genba thead th,
+  .table-genba tbody td {
+    padding: 6px 5px;
+    font-size: 0.72rem;
+  }
+}
+
 /* Print Styles */
 @media print {
   .no-print {
