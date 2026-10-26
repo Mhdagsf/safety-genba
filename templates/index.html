@@ -136,8 +136,19 @@
                     </select>
                 </div>
 
+                <!-- PIC Filter (Penanggung Jawab) -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">PIC (PENANGGUNG JAWAB):</label>
+                    <select name="pic" onchange="this.form.submit()" class="form-select form-select-sm fw-semibold">
+                        <option value="ALL" {% if pic_filter == 'ALL' %}selected{% endif %}>Semua PIC</option>
+                        {% for p in pics %}
+                            <option value="{{ p }}" {% if pic_filter == p %}selected{% endif %}>{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
                 <!-- Keyword Search -->
-                <div class="col-12 col-md-4">
+                <div class="col-12 col-md-2 flex-grow-1">
                     <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">PENCARIAN KATA KUNCI:</label>
                     <div class="input-group input-group-sm">
                         <span class="input-group-text bg-white border-end-0">
@@ -145,7 +156,7 @@
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/>
                             </svg>
                         </span>
-                        <input type="text" name="q" value="{{ search_query }}" placeholder="Cari temuan, PIC, posisi..." class="form-control form-control-sm border-start-0">
+                        <input type="text" name="q" value="{{ search_query }}" placeholder="Cari temuan, posisi..." class="form-control form-control-sm border-start-0">
                         <button type="submit" class="btn btn-dark btn-sm">Cari</button>
                     </div>
                 </div>
@@ -162,21 +173,22 @@
                             {% elif period_type == 'week' %}(Mingguan)
                             {% elif period_type == 'year' %}(Tahun {{ period_val }})
                             {% endif %}
+                            {% if pic_filter != 'ALL' %}<span class="badge bg-secondary-subtle text-secondary border">PIC: {{ pic_filter }}</span>{% endif %}
                         </span>
-                        {% if line_filter != 'ALL' or status_filter != 'ALL' or search_query or period_type != 'month' %}
+                        {% if line_filter != 'ALL' or status_filter != 'ALL' or pic_filter != 'ALL' or search_query or period_type != 'month' %}
                             <a href="{{ url_for('index', period_type='month') }}" class="text-danger text-decoration-none fw-bold ms-2" style="font-size: 0.75rem;">Reset Filter</a>
                         {% endif %}
                     </div>
 
                     <div class="d-flex align-items-center gap-2">
                         <div class="btn-group btn-group-sm" role="group">
-                            <a href="{{ url_for('index', line=line_filter, status=status_filter, q=search_query, period_type=period_type, period_val=period_val, view='table') }}" class="btn btn-sm {% if view_mode == 'table' %}btn-primary fw-semibold{% else %}btn-outline-secondary{% endif %}" title="Tampilan Tabel Spreadsheet">
+                            <a href="{{ url_for('index', line=line_filter, status=status_filter, pic=pic_filter, q=search_query, period_type=period_type, period_val=period_val, view='table') }}" class="btn btn-sm {% if view_mode == 'table' %}btn-primary fw-semibold{% else %}btn-outline-secondary{% endif %}" title="Tampilan Tabel Spreadsheet">
                                 <svg width="14" height="14" class="me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z"/>
                                 </svg>
                                 Tabel Excel
                             </a>
-                            <a href="{{ url_for('index', line=line_filter, status=status_filter, q=search_query, period_type=period_type, period_val=period_val, view='card') }}" class="btn btn-sm {% if view_mode == 'card' %}btn-primary fw-semibold{% else %}btn-outline-secondary{% endif %}" title="Tampilan Kartu Foto">
+                            <a href="{{ url_for('index', line=line_filter, status=status_filter, pic=pic_filter, q=search_query, period_type=period_type, period_val=period_val, view='card') }}" class="btn btn-sm {% if view_mode == 'card' %}btn-primary fw-semibold{% else %}btn-outline-secondary{% endif %}" title="Tampilan Kartu Foto">
                                 <svg width="14" height="14" class="me-1" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                     <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z"/>
                                 </svg>

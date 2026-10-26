@@ -39,10 +39,24 @@ def save_uploaded_file(file_storage):
         return unique_name
     return ''
 
+PICS = ["Elah hayati", "Yanti", "Rostika", "Maulidia", "Febi", "Novi"]
+LINES = ["FB 1", "FB 2", "FB 3", "FB 4", "FC 1", "FC 2", "FC 3", "FC 4"]
+LINE_POS_MAP = {
+    "FB 1": [f"Pos {i}" for i in range(1, 9)] + ["QC"],        # 8 pos + QC
+    "FB 2": [f"Pos {i}" for i in range(1, 10)] + ["QC"],       # 9 pos + QC
+    "FB 3": [f"Pos {i}" for i in range(1, 11)] + ["QC"],       # 10 pos + QC
+    "FB 4": [f"Pos {i}" for i in range(1, 11)] + ["QC"],       # 10 pos + QC
+    "FC 1": [f"Pos {i}" for i in range(1, 11)] + ["QC"],       # 10 pos + QC
+    "FC 2": [f"Pos {i}" for i in range(1, 12)] + ["QC"],       # 11 pos + QC (max 11)
+    "FC 3": [f"Pos {i}" for i in range(1, 10)] + ["QC"],       # 9 pos + QC
+    "FC 4": [f"Pos {i}" for i in range(1, 12)] + ["QC"],       # 11 pos + QC (max 11)
+}
+
 @app.route('/')
 def index():
     line_filter = request.args.get('line', 'ALL')
     status_filter = request.args.get('status', 'ALL')
+    pic_filter = request.args.get('pic', 'ALL')
     search_query = request.args.get('q', '').strip()
     view_mode = request.args.get('view', 'table') # 'table' or 'card'
 
@@ -64,14 +78,12 @@ def index():
     else:
         period_val = request.args.get('period_val', '')
 
-    findings = database.get_all_findings(line_filter, status_filter, search_query, period_type, period_val)
-    stats = database.get_statistics(line_filter, status_filter, search_query, period_type, period_val)
+    findings = database.get_all_findings(line_filter, status_filter, search_query, period_type, period_val, pic_filter)
+    stats = database.get_statistics(line_filter, status_filter, search_query, period_type, period_val, pic_filter)
     
     pct_closed = 0
     if stats['total'] > 0:
         pct_closed = round((stats['ok'] / stats['total']) * 100, 1)
-
-    lines = ["FB 1", "FB 2", "FB 3", "FB 4", "FC 1", "FC 2", "FC 3", "FC 4"]
 
     return render_template('index.html',
                            findings=findings,
@@ -79,16 +91,18 @@ def index():
                            pct_closed=pct_closed,
                            line_filter=line_filter,
                            status_filter=status_filter,
+                           pic_filter=pic_filter,
                            search_query=search_query,
                            view_mode=view_mode,
                            period_type=period_type,
                            period_val=period_val,
                            available_periods=available_periods,
-                           lines=lines)
+                           lines=LINES,
+                           pics=PICS,
+                           line_pos_map=LINE_POS_MAP)
 
 @app.route('/input', methods=['GET', 'POST'])
 def input_finding():
-    lines = ["FB 1", "FB 2", "FB 3", "FB 4", "FC 1", "FC 2", "FC 3", "FC 4"]
     if request.method == 'POST':
         tanggal = request.form.get('tanggal') or datetime.now().strftime('%Y-%m-%d')
         line = request.form.get('line', 'FB 4')
@@ -99,9 +113,8 @@ def input_finding():
         dudate = request.form.get('dudate', '').strip()
         fix_date = request.form.get('fix_date', '').strip()
         pic = request.form.get('pic', '').strip()
-        
-        # Sesuai aturan: Temuan baru selalu berstatus X (Belum Perbaikan), baru bisa diubah GL saat edit
-        judg = 'X'
+        judg = request.form.get('judg', 'X')
+        judg_clean = 'O' if judg.upper() in ['O', 'OK'] else 'X'
 
         # Validasi server-side ketat
         clean_temuan = re.sub(r'[\s\-_.,]', '', temuan)
@@ -128,7 +141,7 @@ def input_finding():
         foto_sebelum_file = request.files.get('foto_sebelum')
         foto_sebelum_name = save_uploaded_file(foto_sebelum_file)
         if not foto_sebelum_name:
-            flash('Foto temuan safety wajib diisi / diunggah!', 'danger')
+            flash('Foto temuan safety (Before) wajib diisi / diunggah!', 'danger')
             return redirect(url_for('input_finding'))
 
         foto_sesudah_file = request.files.get('foto_sesudah')
@@ -147,7 +160,7 @@ def input_finding():
             'dudate': dudate,
             'fix_date': fix_date,
             'pic': pic,
-            'judg': judg,
+            'judg': judg_clean,
             'foto_sebelum': foto_sebelum_name,
             'foto_sesudah': foto_sesudah_name,
             'foto_fix': foto_fix_name
@@ -157,7 +170,7 @@ def input_finding():
         return redirect(url_for('index'))
 
     today_str = datetime.now().strftime('%Y-%m-%d')
-    return render_template('input.html', lines=lines, today_str=today_str)
+    return render_template('input.html', lines=LINES, pics=PICS, line_pos_map=LINE_POS_MAP, today_str=today_str)
 
 @app.route('/edit/<int:finding_id>', methods=['GET', 'POST'])
 def edit_finding(finding_id):
@@ -232,7 +245,7 @@ def edit_finding(finding_id):
         flash(f'Data temuan #{finding_id} berhasil diperbarui oleh Group Leader!', 'success')
         return redirect(url_for('index'))
 
-    return render_template('edit.html', finding=finding, lines=lines)
+    return render_template('edit.html', finding=finding, lines=LINES, pics=PICS, line_pos_map=LINE_POS_MAP)
 
 @app.route('/detail/<int:finding_id>')
 def detail_finding(finding_id):
@@ -252,6 +265,7 @@ def delete_finding(finding_id):
 def export_excel():
     line_filter = request.args.get('line', 'ALL')
     status_filter = request.args.get('status', 'ALL')
+    pic_filter = request.args.get('pic', 'ALL')
     search_query = request.args.get('q', '').strip()
     period_type = request.args.get('period_type', 'all')
     period_val = request.args.get('period_val', '')
@@ -261,12 +275,15 @@ def export_excel():
         status_filter=status_filter,
         search_query=search_query,
         period_type=period_type,
-        period_val=period_val
+        period_val=period_val,
+        pic_filter=pic_filter
     )
     
     period_label = f"_{period_type}" if period_type != 'all' else ""
     if period_val:
         period_label += f"_{period_val}"
+    if pic_filter != 'ALL':
+        period_label += f"_{pic_filter.replace(' ', '_')}"
 
     filename = f"Genba_Safety_Report_Fujiseat{period_label}_{datetime.now().strftime('%Y%m%d_%H%M')}.xlsx"
     return send_file(

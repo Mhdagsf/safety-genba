@@ -56,13 +56,14 @@ def embed_image_to_cell(ws, filename, col_idx_0, row_idx_0, col_width_chars=32, 
         print(f"Error embedding image {filename}: {e}")
         return False
 
-def export_findings_to_excel(line_filter='ALL', status_filter='ALL', search_query='', period_type='all', period_val=None):
+def export_findings_to_excel(line_filter='ALL', status_filter='ALL', search_query='', period_type='all', period_val=None, pic_filter='ALL'):
     rows = database.get_all_findings(
         line_filter=line_filter,
         status_filter=status_filter,
         search_query=search_query,
         period_type=period_type,
-        period_val=period_val
+        period_val=period_val,
+        pic_filter=pic_filter
     )
 
     wb = openpyxl.Workbook()

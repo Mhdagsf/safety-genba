@@ -90,7 +90,7 @@ def get_available_periods():
     conn.close()
     return {'months': months, 'years': years}
 
-def build_filter_clauses(line_filter=None, status_filter=None, search_query=None, period_type='month', period_val=None):
+def build_filter_clauses(line_filter=None, status_filter=None, search_query=None, period_type='month', period_val=None, pic_filter=None):
     query = " WHERE 1=1"
     params = []
 
@@ -106,6 +106,10 @@ def build_filter_clauses(line_filter=None, status_filter=None, search_query=None
         else:
             query += " AND judg = ?"
             params.append(status_filter)
+
+    if pic_filter and pic_filter != 'ALL':
+        query += " AND pic = ?"
+        params.append(pic_filter)
         
     if search_query:
         query += " AND (temuan LIKE ? OR potensi LIKE ? OR pic LIKE ? OR pos LIKE ?)"
@@ -137,11 +141,11 @@ def build_filter_clauses(line_filter=None, status_filter=None, search_query=None
 
     return query, params
 
-def get_all_findings(line_filter=None, status_filter=None, search_query=None, period_type='month', period_val=None):
+def get_all_findings(line_filter=None, status_filter=None, search_query=None, period_type='month', period_val=None, pic_filter=None):
     conn = get_db()
     cursor = conn.cursor()
     base_query = "SELECT * FROM findings"
-    where_clause, params = build_filter_clauses(line_filter, status_filter, search_query, period_type, period_val)
+    where_clause, params = build_filter_clauses(line_filter, status_filter, search_query, period_type, period_val, pic_filter)
     full_query = base_query + where_clause + " ORDER BY id DESC"
     
     cursor.execute(full_query, params)
@@ -231,11 +235,11 @@ def delete_finding(finding_id):
     conn.commit()
     conn.close()
 
-def get_statistics(line_filter=None, status_filter=None, search_query=None, period_type='month', period_val=None):
+def get_statistics(line_filter=None, status_filter=None, search_query=None, period_type='month', period_val=None, pic_filter=None):
     conn = get_db()
     cursor = conn.cursor()
     
-    where_clause, params = build_filter_clauses(line_filter, status_filter, search_query, period_type, period_val)
+    where_clause, params = build_filter_clauses(line_filter, status_filter, search_query, period_type, period_val, pic_filter)
     
     cursor.execute("SELECT COUNT(*) FROM findings" + where_clause, params)
     total = cursor.fetchone()[0]

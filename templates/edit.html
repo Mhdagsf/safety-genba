@@ -116,7 +116,7 @@
                     <div class="row g-2">
                         <div class="col-12 col-md-4">
                             <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Line Produksi <span class="text-danger">*</span></label>
-                            <select name="line" id="editLine" required class="form-select form-select-sm fw-semibold">
+                            <select name="line" id="editLine" required class="form-select form-select-sm fw-semibold" onchange="updatePosDropdown(this.value, 'editPos')">
                                 {% for l in lines %}
                                     <option value="{{ l }}" {% if finding.line == l %}selected{% endif %}>Line {{ l }}</option>
                                 {% endfor %}
@@ -125,7 +125,9 @@
 
                         <div class="col-12 col-md-4">
                             <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">Pos <span class="text-danger">*</span></label>
-                            <input type="text" name="pos" id="editPos" value="{{ finding.pos }}" required minlength="1" maxlength="50" placeholder="Contoh: Pos 10, Pos 9, QC" class="form-control form-control-sm">
+                            <select name="pos" id="editPos" required class="form-select form-select-sm fw-semibold">
+                                <option value="" disabled>-- Pilih Pos --</option>
+                            </select>
                         </div>
 
                         <div class="col-12 col-md-4">
@@ -182,7 +184,15 @@
 
                         <div class="col-12 col-md-4">
                             <label class="form-label mb-1 fw-semibold text-secondary" style="font-size: 0.75rem;">PIC (Penanggung Jawab) <span class="text-danger">*</span></label>
-                            <input type="text" name="pic" id="editPic" value="{{ finding.pic }}" required minlength="2" placeholder="Contoh: Rostika, Mtc" class="form-control form-control-sm">
+                            <select name="pic" id="editPic" required class="form-select form-select-sm fw-semibold">
+                                <option value="" disabled>-- Pilih PIC --</option>
+                                {% for p in pics %}
+                                    <option value="{{ p }}" {% if finding.pic == p %}selected{% endif %}>{{ p }}</option>
+                                {% endfor %}
+                                {% if finding.pic and finding.pic not in pics %}
+                                    <option value="{{ finding.pic }}" selected>{{ finding.pic }}</option>
+                                {% endif %}
+                            </select>
                         </div>
 
                         <div class="col-12 col-md-4">
@@ -500,8 +510,46 @@
         });
     }
 
+    const linePosMap = {{ line_pos_map | tojson }};
+    const currentPos = {{ finding.pos | tojson }};
+
+    function updatePosDropdown(selectedLine, selectElementId, defaultSelected = '') {
+        const posSelect = document.getElementById(selectElementId);
+        if (!posSelect) return;
+        
+        const availablePos = linePosMap[selectedLine] || [];
+        posSelect.innerHTML = '<option value="" disabled>-- Pilih Pos --</option>';
+        
+        let matched = false;
+        availablePos.forEach(pos => {
+            const opt = document.createElement('option');
+            opt.value = pos;
+            opt.textContent = pos;
+            if (defaultSelected && defaultSelected === pos) {
+                opt.selected = true;
+                matched = true;
+            }
+            posSelect.appendChild(opt);
+        });
+        
+        // Preserve legacy/custom pos if not in list
+        if (defaultSelected && !matched) {
+            const opt = document.createElement('option');
+            opt.value = defaultSelected;
+            opt.textContent = defaultSelected;
+            opt.selected = true;
+            posSelect.appendChild(opt);
+        }
+        
+        if (!defaultSelected && availablePos.length > 0) {
+            posSelect.value = availablePos[0];
+        }
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         syncPotensiChips('editPotensi', '#editChipContainer');
+        const selectedLine = document.getElementById('editLine').value;
+        updatePosDropdown(selectedLine, 'editPos', currentPos);
     });
 
     function checkFixAutoJudg(val) {
