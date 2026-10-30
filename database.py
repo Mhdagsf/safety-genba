@@ -146,7 +146,10 @@ def seed_initial_data(cursor, is_pg=False):
         INSERT INTO findings (tanggal, line, pos, temuan, potensi, perbaikan, dudate, fix_date, pic, judg, foto_sebelum, foto_sesudah, foto_fix)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     '''
-    cursor.executemany(sql, sample_records)
+    for rec in sample_records:
+        # Normalize to exactly 13 values
+        padded = list(rec) + [''] * (13 - len(rec))
+        cursor.execute(sql, tuple(padded[:13]))
 
 
 def get_available_periods():
