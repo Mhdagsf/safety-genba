@@ -62,9 +62,12 @@ def _build_db_config():
         'connect_timeout': 10,
     }
 
-    # Enable SSL automatically for cloud hosts (TiDB Cloud, Aiven, Railway, etc.) if DB_SSL=true or non-local host requires it
-    if ssl_mode in ('1', 'true', 'yes', 'required'):
+    # Enable SSL automatically for cloud hosts (TiDB Cloud, Aiven, Railway, etc.) without requiring a local CA cert file
+    is_cloud_ssl = ssl_mode in ('1', 'true', 'yes', 'required') or ('tidbcloud.com' in host.lower()) or ('aivencloud.com' in host.lower())
+    if is_cloud_ssl:
         cfg['ssl_disabled'] = False
+        cfg['ssl_verify_cert'] = False
+        cfg['ssl_verify_identity'] = False
     elif ssl_mode in ('0', 'false', 'no', 'disabled'):
         cfg['ssl_disabled'] = True
 
