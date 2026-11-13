@@ -12,7 +12,8 @@ import os
 import database
 
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
-UPLOAD_DIR = os.path.join(BASE_DIR, 'uploads')
+IS_VERCEL = os.environ.get('VERCEL') == '1'
+UPLOAD_DIR = '/tmp/uploads' if IS_VERCEL else os.path.join(BASE_DIR, 'uploads')
 
 def embed_image_to_cell(ws, filename, col_idx_0, row_idx_0, col_width_chars=32, target_w=205, target_h=110):
     """
@@ -23,6 +24,8 @@ def embed_image_to_cell(ws, filename, col_idx_0, row_idx_0, col_width_chars=32, 
     if not filename:
         return False
     full_path = os.path.join(UPLOAD_DIR, filename)
+    if not os.path.isfile(full_path):
+        database.ensure_photo_on_disk(filename, UPLOAD_DIR)
     if not os.path.isfile(full_path):
         return False
     try:

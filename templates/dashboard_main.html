@@ -1,0 +1,852 @@
+{% extends "base.html" %}
+
+{% block title %}Dashboard Monitoring & Statistik Safety - PT. FUJISEAT INDONESIA{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-3">
+
+    <!-- ======================================================== -->
+    <!-- 1. KPI SUMMARY ROW (STATIC / TIDAK BISA DIKLIK)          -->
+    <!-- ======================================================== -->
+    <div class="row g-2 g-md-3">
+        <!-- Total Temuan -->
+        <div class="col-6 col-lg-3">
+            <div class="card-kpi d-flex align-items-center justify-content-between h-100">
+                <div>
+                    <div class="kpi-label">Total Temuan</div>
+                    <div class="kpi-value">{{ stats.total }}</div>
+                    <div class="text-muted mt-1" style="font-size: 0.7rem;">
+                        {% if period_type == 'month' %}Bulan: <strong>{{ period_val }}</strong>
+                        {% elif period_type == 'week' %}Mingguan (<strong>{{ period_val }}</strong>)
+                        {% elif period_type == 'year' %}Tahun: <strong>{{ period_val }}</strong>
+                        {% else %}<strong>Semua Periode</strong>{% endif %}
+                    </div>
+                </div>
+                <div class="kpi-icon-box bg-primary-subtle text-primary border border-primary-subtle">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Belum Diperbaiki (X) + Overdue Indicator -->
+        <div class="col-6 col-lg-3">
+            <div class="card-kpi d-flex align-items-center justify-content-between h-100"
+                style="border-left: 4px solid #ef4444;">
+                <div>
+                    <div class="kpi-label" style="color: #b91c1c !important;">Belum Diperbaiki (X)</div>
+                    <div class="kpi-value" style="color: #dc2626;">{{ stats.on_progress }}</div>
+                    <div class="mt-1 d-flex align-items-center gap-1 flex-wrap">
+                        {% if stats.overdue and stats.overdue > 0 %}
+                        <span class="badge-overdue">
+                            &#9888; {{ stats.overdue }} Overdue
+                        </span>
+                        {% else %}
+                        <small class="text-muted" style="font-size: 0.7rem;">0 Lewat Due Date</small>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="kpi-icon-box bg-danger-subtle text-danger border border-danger-subtle">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Selesai Diperbaiki (O) -->
+        <div class="col-6 col-lg-3">
+            <div class="card-kpi d-flex align-items-center justify-content-between h-100"
+                style="border-left: 4px solid #10b981;">
+                <div>
+                    <div class="kpi-label" style="color: #047857 !important;">Selesai Diperbaiki (O)</div>
+                    <div class="kpi-value" style="color: #059669;">{{ stats.ok }}</div>
+                    <div class="text-muted mt-1" style="font-size: 0.7rem;">Terverifikasi OK (O)</div>
+                </div>
+                <div class="kpi-icon-box bg-success-subtle text-success border border-success-subtle">
+                    <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                </div>
+            </div>
+        </div>
+
+        <!-- Rasio Penyelesaian -->
+        <div class="col-6 col-lg-3">
+            <div class="card-kpi d-flex flex-column justify-content-between h-100"
+                style="border-left: 4px solid #2563eb;">
+                <div class="d-flex justify-content-between align-items-center">
+                    <div>
+                        <div class="kpi-label">Rasio Penyelesaian</div>
+                        <div class="kpi-value text-primary">{{ pct_closed }}%</div>
+                    </div>
+                    <span class="badge bg-primary-subtle text-primary border border-primary-subtle"
+                        style="font-size: 0.7rem;">{{ stats.ok }}/{{ stats.total }} OK</span>
+                </div>
+                <div class="mt-2">
+                    <div class="progress" style="height: 7px; border-radius: 999px; background-color: #e2e8f0;">
+                        <div class="progress-bar" role="progressbar"
+                            style="width: {{ pct_closed }}%; background: linear-gradient(90deg, #2563eb, #10b981);">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 2. COLLAPSIBLE VISUAL ANALYTICS PANEL ON MAIN DASHBOARD  -->
+    <!-- ======================================================== -->
+    <div class="card border shadow-sm overflow-hidden" style="border-radius: 10px;">
+        <div class="card-header bg-white py-2 px-3 d-flex flex-wrap align-items-center justify-content-between border-bottom">
+            <div class="d-flex align-items-center gap-2">
+                <span class="p-1.5 rounded bg-primary-subtle text-primary d-inline-flex">
+                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M11 3.055A9.001 9.001 0 1020.945 13H11V3.055z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M20.488 9H15V3.512A9.025 9.025 0 0120.488 9z" />
+                    </svg>
+                </span>
+                <div>
+                    <span class="fw-bold text-dark" style="font-size: 0.82rem;">Ringkasan Statistik &amp; Grafik Temuan Safety</span>
+                </div>
+            </div>
+            <div class="d-flex align-items-center gap-2">
+                <a href="{{ url_for('analytics_dashboard', period_type=period_type, period_val=period_val, line=line_filter, pic=pic_filter) }}"
+                    class="btn btn-sm btn-link text-decoration-none fw-semibold py-0 px-1" style="font-size: 0.74rem;">
+                    Buka Analitik Penuh &rarr;
+                </a>
+                <button class="btn btn-sm btn-outline-secondary py-0.5 px-2 d-flex align-items-center gap-1"
+                    type="button" id="toggleChartsBtn" onclick="toggleAnalyticsSection()" style="font-size: 0.72rem;">
+                    <span id="toggleChartsLabel">Sembunyikan Grafik</span>
+                </button>
+            </div>
+        </div>
+
+        <div id="dashboardChartsCollapse" class="card-body p-3 bg-light bg-opacity-50">
+            <div class="row g-3">
+                <!-- Chart 1: Sebaran Temuan per Line -->
+                <div class="col-12 col-lg-5">
+                    <div class="analytics-card">
+                        <div class="analytics-card-header">
+                            <h6 class="analytics-card-title">
+                                <span>Sebaran Temuan per Line Produksi</span>
+                            </h6>
+                            <div class="d-flex align-items-center gap-2" style="font-size: 0.68rem;">
+                                <span class="d-inline-flex align-items-center gap-1"><span
+                                        style="width:8px;height:8px;border-radius:2px;background:#10b981;display:inline-block;"></span>Selesai
+                                    (O)</span>
+                                <span class="d-inline-flex align-items-center gap-1"><span
+                                        style="width:8px;height:8px;border-radius:2px;background:#f97316;display:inline-block;"></span>Belum
+                                    (X)</span>
+                            </div>
+                        </div>
+                        <div class="analytics-card-body">
+                            <canvas id="mainLineBarChart" height="210"></canvas>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart 2: Proporsi Status Judgement (Dengan Dropdown) -->
+                <div class="col-12 col-md-6 col-lg-3">
+                    <div class="analytics-card">
+                        <div class="analytics-card-header gap-2">
+                            <h6 class="analytics-card-title text-nowrap">Proporsi Status Judgement</h6>
+                            <select id="mainDonutDropdown" class="form-select form-select-sm py-0.5 px-2 fw-semibold"
+                                style="width: auto; min-width: 115px; font-size: 0.7rem;"
+                                onchange="changeMainDonutMode(this.value)">
+                                <option value="ALL">Semua Status</option>
+                                <option value="O">Selesai (O)</option>
+                                <option value="X">Belum (X)</option>
+                                <option value="OVERDUE">Overdue</option>
+                            </select>
+                        </div>
+                        <div class="analytics-card-body d-flex flex-column align-items-center justify-content-center">
+                            <canvas id="mainStatusDonutChart" height="175"></canvas>
+                            <div class="d-flex flex-wrap justify-content-center gap-2 mt-2" style="font-size: 0.68rem;">
+                                <span class="badge bg-success-subtle text-success border border-success-subtle">O: {{
+                                    analytics.summary.ok }}</span>
+                                <span class="badge bg-warning-subtle text-dark border border-warning-subtle">X: {{
+                                    analytics.summary.ontime_progress }}</span>
+                                {% if analytics.summary.overdue > 0 %}
+                                <span class="badge bg-danger-subtle text-danger border border-danger-subtle">Overdue: {{
+                                    analytics.summary.overdue }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Chart 3: Top Potensi Bahaya & Kinerja PIC (Tabbed) -->
+                <div class="col-12 col-md-6 col-lg-4">
+                    <div class="analytics-card d-flex flex-column">
+                        <div class="analytics-card-header py-1.5">
+                            <div class="btn-group btn-group-sm" role="group">
+                                <button type="button" class="btn btn-sm btn-primary py-0.5 px-2" id="tabHazardBtn"
+                                    onclick="switchMiniTab('hazard')" style="font-size: 0.7rem;">Top Potensi
+                                    Bahaya</button>
+                                <button type="button" class="btn btn-sm btn-outline-secondary py-0.5 px-2"
+                                    id="tabPicBtn" onclick="switchMiniTab('pic')" style="font-size: 0.7rem;">Kinerja
+                                    PIC</button>
+                            </div>
+                        </div>
+
+                        <!-- Tab Content A: Top Potensi Bahaya -->
+                        <div class="analytics-card-body flex-grow-1 overflow-auto" id="miniTabHazard"
+                            style="max-height: 225px;">
+                            {% if analytics.hazards|length == 0 %}
+                            <div class="text-center text-muted py-4" style="font-size: 0.75rem;">Belum ada data potensi
+                                bahaya</div>
+                            {% else %}
+                            {% set max_haz = analytics.hazards[0].count if analytics.hazards else 1 %}
+                            {% for h in analytics.hazards[:5] %}
+                            <div class="hazard-bar-row mb-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1"
+                                    style="font-size: 0.73rem;">
+                                    <span class="fw-semibold text-dark text-truncate" style="max-width: 72%;">{{
+                                        h.label }}</span>
+                                    <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{
+                                        h.count }} kasus ({{ h.pct }}%)</span>
+                                </div>
+                                <div class="hazard-bar-track">
+                                    <div class="hazard-bar-fill"
+                                        style="width: {{ (h.count / max_haz * 100)|round(1) }}%;"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+
+                        <!-- Tab Content B: Kinerja PIC -->
+                        <div class="analytics-card-body flex-grow-1 overflow-auto d-none" id="miniTabPic"
+                            style="max-height: 225px;">
+                            {% if analytics.pics|length == 0 %}
+                            <div class="text-center text-muted py-4" style="font-size: 0.75rem;">Belum ada data PIC
+                            </div>
+                            {% else %}
+                            {% for p in analytics.pics[:6] %}
+                            <div class="pic-row-item mb-1">
+                                <div class="d-flex justify-content-between align-items-center mb-1"
+                                    style="font-size: 0.73rem;">
+                                    <span class="fw-bold text-dark">{{ p.pic }}</span>
+                                    <span class="text-muted">
+                                        <strong class="text-success">{{ p.ok }} O</strong> /
+                                        <strong class="text-danger">{{ p.on_progress }} X</strong>
+                                        <span class="badge bg-light text-dark border ms-1">{{ p.pct }}%</span>
+                                    </span>
+                                </div>
+                                <div class="progress" style="height: 6px;">
+                                    <div class="progress-bar bg-success" style="width: {{ p.pct }}%;"></div>
+                                    <div class="progress-bar bg-danger" style="width: {{ 100 - p.pct }}%;"></div>
+                                </div>
+                            </div>
+                            {% endfor %}
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- 3. FILTER & SEARCH TOOLBAR                               -->
+    <!-- ======================================================== -->
+    <div class="card shadow-sm border" style="border-radius: 10px;">
+        <div class="card-body p-2.5 p-md-3">
+            <form method="GET" action="{{ url_for('index') }}" id="dashboardFilterForm"
+                class="row g-2 align-items-end">
+
+                <!-- Period Type Filter -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block"
+                        style="font-size: 0.6875rem;">PERIODE TEMUAN</label>
+                    <select name="period_type" id="periodTypeSelect" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-bold border-primary text-primary">
+                        <option value="month" {% if period_type=='month' %}selected{% endif %}>Perbulan
+                            (Bulanan)</option>
+                        <option value="week" {% if period_type=='week' %}selected{% endif %}>Perminggu
+                            (Mingguan)</option>
+                        <option value="year" {% if period_type=='year' %}selected{% endif %}>Pertahun (Tahunan)
+                        </option>
+                        <option value="all" {% if period_type=='all' %}selected{% endif %}>Semua Periode
+                        </option>
+                    </select>
+                </div>
+
+                <!-- Period Value Selector -->
+                {% if period_type == 'month' %}
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block"
+                        style="font-size: 0.6875rem;">PILIH BULAN</label>
+                    <select name="period_val" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        {% for m in available_periods['months'] %}
+                        <option value="{{ m }}" {% if period_val==m %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% elif period_type == 'year' %}
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block"
+                        style="font-size: 0.6875rem;">PILIH TAHUN</label>
+                    <select name="period_val" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        {% for y in available_periods['years'] %}
+                        <option value="{{ y }}" {% if period_val==y %}selected{% endif %}>Tahun {{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% elif period_type == 'week' %}
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block"
+                        style="font-size: 0.6875rem;">TANGGAL REFERENSI</label>
+                    <input type="date" name="period_val" value="{{ period_val }}" onchange="this.form.submit()"
+                        class="form-control form-control-sm">
+                </div>
+                {% else %}
+                <input type="hidden" name="period_val" value="">
+                {% endif %}
+
+                <!-- Line Filter -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">LINE
+                        PRODUKSI</label>
+                    <select name="line" id="filterLineSelect" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        <option value="ALL" {% if line_filter=='ALL' %}selected{% endif %}>Semua Line</option>
+                        {% for l in lines %}
+                        <option value="{{ l }}" {% if line_filter==l %}selected{% endif %}>Line {{ l }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Status Filter (O / X / OVERDUE) -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block"
+                        style="font-size: 0.6875rem;">STATUS JUDGEMENT</label>
+                    <select name="status" id="filterStatusSelect" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        <option value="ALL" {% if status_filter=='ALL' %}selected{% endif %}>Semua Status
+                        </option>
+                        <option value="O" {% if status_filter in ['O', 'OK' ] %}selected{% endif %}>O - Selesai
+                            Perbaikan</option>
+                        <option value="X" {% if status_filter in ['X', 'ON PROGRESS' ] %}selected{% endif %}>X -
+                            Belum Perbaikan</option>
+                        <option value="OVERDUE" {% if status_filter=='OVERDUE' %}selected{% endif %}>&#9888;
+                            Overdue (Terlambat)</option>
+                    </select>
+                </div>
+
+                <!-- PIC Filter -->
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">PIC
+                        PERBAIKAN</label>
+                    <select name="pic" id="filterPicSelect" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        <option value="ALL" {% if pic_filter=='ALL' %}selected{% endif %}>Semua PIC</option>
+                        {% for p in pics %}
+                        <option value="{{ p }}" {% if pic_filter|lower==p|lower %}selected{% endif %}>{{ p }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <!-- Keyword Search -->
+                <div class="col-12 col-md-2 flex-grow-1">
+                    <label class="form-label mb-1 text-muted fw-bold d-block" style="font-size: 0.6875rem;">CARI
+                        KATA KUNCI</label>
+                    <div class="input-group input-group-sm">
+                        <input type="text" name="q" id="filterSearchInput" value="{{ search_query }}"
+                            placeholder="Temuan, bahaya, pos..." class="form-control form-control-sm">
+                        <button type="submit" class="btn btn-primary btn-sm px-2.5" title="Cari">
+                            <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+
+                <input type="hidden" name="view" value="{{ view_mode }}">
+
+                <!-- Bottom Action Bar inside Filter Card -->
+                <div class="col-12 d-flex flex-wrap justify-content-between align-items-center pt-2 border-top mt-2 gap-2">
+                    <div class="d-flex align-items-center flex-wrap gap-1.5">
+                        <span class="text-muted" style="font-size: 0.75rem;">
+                            Menampilkan <strong class="text-dark">{{ findings|length }}</strong> temuan
+                        </span>
+
+                        <!-- Active Filter Pills (Click to clear individual filter) -->
+                        {% if line_filter != 'ALL' %}
+                        <a href="{{ url_for('index', line='ALL', status=status_filter, pic=pic_filter, q=search_query, period_type=period_type, period_val=period_val, view=view_mode) }}"
+                            class="filter-pill" title="Hapus filter Line">
+                            Line: {{ line_filter }} <span>&times;</span>
+                        </a>
+                        {% endif %}
+                        {% if status_filter != 'ALL' %}
+                        <a href="{{ url_for('index', line=line_filter, status='ALL', pic=pic_filter, q=search_query, period_type=period_type, period_val=period_val, view=view_mode) }}"
+                            class="filter-pill" title="Hapus filter Status">
+                            Status: {{ status_filter }} <span>&times;</span>
+                        </a>
+                        {% endif %}
+                        {% if pic_filter != 'ALL' %}
+                        <a href="{{ url_for('index', line=line_filter, status=status_filter, pic='ALL', q=search_query, period_type=period_type, period_val=period_val, view=view_mode) }}"
+                            class="filter-pill" title="Hapus filter PIC">
+                            PIC: {{ pic_filter }} <span>&times;</span>
+                        </a>
+                        {% endif %}
+                        {% if search_query %}
+                        <a href="{{ url_for('index', line=line_filter, status=status_filter, pic=pic_filter, q='', period_type=period_type, period_val=period_val, view=view_mode) }}"
+                            class="filter-pill" title="Hapus kata kunci">
+                            Kata Kunci: "{{ search_query }}" <span>&times;</span>
+                        </a>
+                        {% endif %}
+
+                        {% if line_filter != 'ALL' or status_filter != 'ALL' or pic_filter != 'ALL' or
+                        search_query or period_type != 'month' %}
+                        <a href="{{ url_for('index', period_type='month', view=view_mode) }}"
+                            class="text-danger text-decoration-none fw-bold ms-1" style="font-size: 0.73rem;">
+                            Reset Semua
+                        </a>
+                        {% endif %}
+                    </div>
+
+                    <div class="d-flex align-items-center gap-2">
+                        <!-- View Switcher: Table vs Card -->
+                        <div class="btn-group btn-group-sm" role="group">
+                            <a href="{{ url_for('index', line=line_filter, status=status_filter, pic=pic_filter, q=search_query, period_type=period_type, period_val=period_val, view='table') }}"
+                                class="btn btn-sm {% if view_mode == 'table' %}btn-primary fw-semibold{% else %}btn-outline-secondary{% endif %}"
+                                title="Tampilan Tabel Spreadsheet">
+                                <svg width="14" height="14" class="me-1" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M3 10h18M3 14h18m-9-4v8m-7 0h14a2 2 0 002-2V6a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                                </svg>
+                                Tabel
+                            </a>
+                            <a href="{{ url_for('index', line=line_filter, status=status_filter, pic=pic_filter, q=search_query, period_type=period_type, period_val=period_val, view='card') }}"
+                                class="btn btn-sm {% if view_mode == 'card' %}btn-primary fw-semibold{% else %}btn-outline-secondary{% endif %}"
+                                title="Tampilan Kartu Visual Before-After">
+                                <svg width="14" height="14" class="me-1" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2V6zM14 6a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V6zM4 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2H6a2 2 0 01-2-2v-2zM14 16a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2v-2z" />
+                                </svg>
+                                Kartu Foto
+                            </a>
+                        </div>
+                    </div>
+                </div>
+
+            </form>
+        </div>
+    </div>
+
+    <!-- Empty State -->
+    {% if findings|length == 0 %}
+    <div class="card p-5 text-center shadow-sm border" style="border-radius: 10px;">
+        <svg width="42" height="42" class="text-muted mx-auto mb-2" fill="none" stroke="currentColor"
+            viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+        </svg>
+        <h6 class="fw-bold text-secondary mb-1">Tidak Ada Data Temuan pada Filter Ini</h6>
+        <p class="text-muted mb-3" style="font-size: 0.78rem;">Coba pilih "Semua Periode" atau klik tombol di
+            bawah untuk mereset filter.</p>
+        <div class="d-flex justify-content-center gap-2">
+            <a href="{{ url_for('index', period_type='all') }}" class="btn btn-sm btn-outline-primary">Tampilkan
+                Semua Periode</a>
+            <a href="{{ url_for('input_finding') }}" class="btn btn-sm btn-primary">+ Input Temuan Baru</a>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ======================================================== -->
+    <!-- VIEW MODE 1: TABEL EXCEL PROFESIONAL                     -->
+    <!-- ======================================================== -->
+    {% if view_mode == 'table' and findings|length > 0 %}
+    <div class="card shadow-sm border overflow-hidden" style="border-radius: 10px;">
+        <div class="table-responsive">
+            <table class="table-genba mb-0">
+                <thead>
+                    <tr>
+                        <th style="width: 36px;">No</th>
+                        <th style="width: 82px;">Tgl</th>
+                        <th style="width: 62px;">Line</th>
+                        <th style="width: 70px;">Pos</th>
+                        <th style="min-width: 185px;">Temuan &amp; Foto Before</th>
+                        <th style="min-width: 135px;">Potensi Bahaya</th>
+                        <th style="min-width: 185px;">Perbaikan &amp; Foto After</th>
+                        <th style="width: 88px;">Due Date</th>
+                        <th style="min-width: 155px;">Realisasi (Fix)</th>
+                        <th style="width: 75px;">PIC</th>
+                        <th style="width: 56px;">Judg</th>
+                        <th style="width: 215px; min-width: 215px;">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for item in findings %}
+                    {% set is_ok = item.judg in ['O', 'OK'] %}
+                    {% set is_overdue = (not is_ok) and item.dudate and (item.dudate|length == 10) and (item.dudate < today_str) %}
+                    <tr class="{% if is_overdue %}row-overdue{% endif %}">
+                        <td class="text-center text-muted fw-semibold">{{ loop.index }}</td>
+                        <td class="text-center text-nowrap fw-medium">{{ item.tanggal }}</td>
+                        <td class="text-center text-nowrap">
+                            <span class="badge-line">{{ item.line }}</span>
+                        </td>
+                        <td class="text-center text-nowrap fw-semibold text-secondary">{{ item.pos or '-' }}</td>
+
+                        <!-- Temuan + Foto Before -->
+                        <td>
+                            <div class="fw-semibold text-dark mb-1">{{ item.temuan }}</div>
+                            {% if item.foto_sebelum %}
+                            <div class="d-flex align-items-center gap-2 mt-1">
+                                <div class="thumbnail-box"
+                                    onclick="zoomPhoto('{{ url_for('uploaded_file', filename=item.foto_sebelum) }}', 'BEFORE — Line {{ item.line }} ({{ item.pos }}): {{ item.temuan }}')">
+                                    <img src="{{ url_for('uploaded_file', filename=item.foto_sebelum) }}"
+                                        alt="Foto Before">
+                                </div>
+                                <span class="text-muted" style="font-size: 0.68rem;">Klik perbesar</span>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- Potensi Bahaya -->
+                        <td>
+                            <span class="text-dark">{{ item.potensi or '-' }}</span>
+                        </td>
+
+                        <!-- Perbaikan + Foto After -->
+                        <td>
+                            <div class="text-dark mb-1">{{ item.perbaikan or '-' }}</div>
+                            {% if item.foto_sesudah %}
+                            <div class="d-flex align-items-center gap-2 mt-1">
+                                <div class="thumbnail-box border-success"
+                                    onclick="zoomPhoto('{{ url_for('uploaded_file', filename=item.foto_sesudah) }}', 'AFTER — Line {{ item.line }} ({{ item.pos }}): {{ item.temuan }}')">
+                                    <img src="{{ url_for('uploaded_file', filename=item.foto_sesudah) }}"
+                                        alt="Foto After">
+                                </div>
+                                <span class="text-success fw-bold" style="font-size: 0.68rem;">&#10003; Bukti
+                                    After</span>
+                            </div>
+                            {% elif not is_ok %}
+                            <span class="badge-progress">ON PROGRESS</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Due Date + Overdue Badge -->
+                        <td class="text-center text-nowrap">
+                            <div class="{% if is_overdue %}text-danger fw-bold{% else %}text-muted{% endif %}">
+                                {{ item.dudate or '-' }}</div>
+                            {% if is_overdue %}
+                            <span class="badge-overdue mt-1">OVERDUE</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Fix (Deskripsi + Foto Fix) -->
+                        <td class="text-dark">
+                            <div>{{ item.fix_date or '-' }}</div>
+                            {% if item.foto_fix %}
+                            <div class="d-flex align-items-center gap-2 mt-1">
+                                <div class="thumbnail-box border-primary"
+                                    onclick="zoomPhoto('{{ url_for('uploaded_file', filename=item.foto_fix) }}', 'FOTO FIX — Line {{ item.line }} ({{ item.pos }})')">
+                                    <img src="{{ url_for('uploaded_file', filename=item.foto_fix) }}"
+                                        alt="Foto Fix">
+                                </div>
+                                <span class="text-primary fw-semibold" style="font-size: 0.68rem;">Foto
+                                    Fix</span>
+                            </div>
+                            {% endif %}
+                        </td>
+
+                        <!-- PIC -->
+                        <td class="text-center text-nowrap">
+                            {% if item.pic %}
+                            <span class="fw-bold text-dark">{{ item.pic }}</span>
+                            {% else %}
+                            <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Judgement O / X -->
+                        <td class="text-center">
+                            {% if is_ok %}
+                            <span class="badge-ok" title="Selesai Diperbaiki (O)">O</span>
+                            {% else %}
+                            <span class="badge-overdue" style="font-size: 0.72rem; padding: 3px 8px;"
+                                title="Belum Selesai (X)">X</span>
+                            {% endif %}
+                        </td>
+
+                        <!-- Actions (Icon + Label Keterangan) -->
+                        <td class="text-center text-nowrap">
+                            <div class="d-inline-flex align-items-center gap-1">
+                                <a href="{{ url_for('detail_finding', finding_id=item.id) }}"
+                                    class="btn btn-sm btn-outline-secondary btn-aksi"
+                                    title="Lihat Detail & Lembar Verifikasi">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                    </svg>
+                                    <span>Detail</span>
+                                </a>
+                                <a href="{{ url_for('edit_finding', finding_id=item.id) }}"
+                                    class="btn btn-sm btn-outline-primary btn-aksi"
+                                    title="Edit / Update Perbaikan">
+                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    </svg>
+                                    <span>Edit</span>
+                                </a>
+                                <form action="{{ url_for('delete_finding', finding_id=item.id) }}" method="POST"
+                                    class="d-inline">
+                                    <button type="button" class="btn btn-sm btn-outline-danger btn-aksi"
+                                        title="Hapus Data" onclick="confirmDelete(event, this.closest('form'))">
+                                        <svg width="13" height="13" fill="none" stroke="currentColor"
+                                            viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                        </svg>
+                                        <span>Hapus</span>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- ======================================================== -->
+    <!-- VIEW MODE 2: KARTU FOTO VISUAL BEFORE vs AFTER           -->
+    <!-- ======================================================== -->
+    {% if view_mode == 'card' and findings|length > 0 %}
+    <div class="row g-3">
+        {% for item in findings %}
+        {% set is_ok = item.judg in ['O', 'OK'] %}
+        {% set is_overdue = (not is_ok) and item.dudate and (item.dudate|length == 10) and (item.dudate < today_str) %}
+        <div class="col-12 col-md-6 col-xl-4">
+            <div class="card h-100 shadow-sm border overflow-hidden" style="border-radius: 10px;">
+                <!-- Card Header -->
+                <div class="card-header bg-white py-2 px-3 d-flex justify-content-between align-items-center border-bottom">
+                    <div class="d-flex align-items-center gap-1.5">
+                        <span class="badge-line">{{ item.line }}</span>
+                        <span class="badge bg-light text-dark border">{{ item.pos or '-' }}</span>
+                        {% if is_overdue %}
+                        <span class="badge-overdue">OVERDUE</span>
+                        {% endif %}
+                    </div>
+                    <div>
+                        {% if is_ok %}
+                        <span class="badge-ok">SELESAI (O)</span>
+                        {% else %}
+                        <span class="badge-progress">BELUM (X)</span>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Side-by-Side Before & After Photos -->
+                <div class="row g-0 border-bottom bg-dark" style="height: 155px;">
+                    <div class="col-6 position-relative border-end border-secondary h-100">
+                        <span class="position-absolute top-0 start-0 m-1.5 badge bg-danger"
+                            style="font-size: 0.62rem; z-index: 2;">BEFORE</span>
+                        {% if item.foto_sebelum %}
+                        <img src="{{ url_for('uploaded_file', filename=item.foto_sebelum) }}"
+                            class="w-100 h-100" style="object-fit: cover; cursor: pointer;"
+                            onclick="zoomPhoto('{{ url_for('uploaded_file', filename=item.foto_sebelum) }}', 'BEFORE — Line {{ item.line }}: {{ item.temuan }}')"
+                            alt="Foto Before">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-secondary"
+                            style="font-size: 0.72rem;">Tanpa Foto Before</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-6 position-relative h-100">
+                        <span class="position-absolute top-0 start-0 m-1.5 badge bg-success"
+                            style="font-size: 0.62rem; z-index: 2;">AFTER</span>
+                        {% if item.foto_sesudah %}
+                        <img src="{{ url_for('uploaded_file', filename=item.foto_sesudah) }}"
+                            class="w-100 h-100" style="object-fit: cover; cursor: pointer;"
+                            onclick="zoomPhoto('{{ url_for('uploaded_file', filename=item.foto_sesudah) }}', 'AFTER — Line {{ item.line }}: {{ item.temuan }}')"
+                            alt="Foto After">
+                        {% else %}
+                        <div class="w-100 h-100 d-flex align-items-center justify-content-center text-warning"
+                            style="font-size: 0.72rem;">Belum Ada Bukti After</div>
+                        {% endif %}
+                    </div>
+                </div>
+
+                <!-- Card Body -->
+                <div class="card-body p-3 d-flex flex-column justify-content-between">
+                    <div>
+                        <h6 class="fw-bold text-dark mb-1" style="font-size: 0.85rem;">{{ item.temuan }}</h6>
+                        {% if item.potensi %}
+                        <div class="mb-2" style="font-size: 0.75rem;">
+                            <small class="text-danger fw-bold d-block">Potensi Bahaya:</small>
+                            <span class="text-dark">{{ item.potensi }}</span>
+                        </div>
+                        {% endif %}
+
+                        {% if item.perbaikan %}
+                        <div class="mb-2" style="font-size: 0.74rem;">
+                            <small class="text-muted fw-bold d-block text-uppercase"
+                                style="font-size: 0.67rem;">Tindakan Perbaikan:</small>
+                            <div class="p-2 bg-light border rounded text-dark">{{ item.perbaikan }}</div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <div class="pt-2 border-top mt-2 row g-1 text-muted" style="font-size: 0.71rem;">
+                        <div class="col-6">Tgl: <strong class="text-dark">{{ item.tanggal }}</strong></div>
+                        <div class="col-6">PIC: <strong class="text-dark">{{ item.pic or '-' }}</strong></div>
+                        <div class="col-6">Due: <strong
+                                class="{% if is_overdue %}text-danger{% else %}text-dark{% endif %}">{{
+                                item.dudate or '-' }}</strong></div>
+                        <div class="col-6">Fix: <strong class="text-success">{{ item.fix_date or '-' }}</strong></div>
+                    </div>
+                </div>
+
+                <!-- Card Footer -->
+                <div class="card-footer bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                    <a href="{{ url_for('detail_finding', finding_id=item.id) }}"
+                        class="btn btn-sm btn-outline-secondary btn-aksi" title="Lembar Verifikasi">
+                        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                        </svg>
+                        <span>Detail</span>
+                    </a>
+                    <div class="d-flex align-items-center gap-1">
+                        <a href="{{ url_for('edit_finding', finding_id=item.id) }}"
+                            class="btn btn-sm btn-outline-primary btn-aksi" title="Edit / Update">
+                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                            <span>Edit</span>
+                        </a>
+                        <form action="{{ url_for('delete_finding', finding_id=item.id) }}" method="POST"
+                            class="d-inline">
+                            <button type="button" class="btn btn-sm btn-outline-danger btn-aksi"
+                                title="Hapus" onclick="confirmDelete(event, this.closest('form'))">
+                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                </svg>
+                                <span>Hapus</span>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+        {% endfor %}
+    </div>
+    {% endif %}
+
+</div>
+
+<!-- Photo Zoom Modal -->
+<div class="modal fade" id="photoZoomModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+        <div class="modal-content bg-dark border-0 shadow-lg">
+            <div class="modal-header py-2 px-3 border-secondary text-white">
+                <h6 class="modal-title fs-6 fw-bold text-truncate" id="photoZoomTitle">Pratinjau Foto Temuan</h6>
+                <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                    aria-label="Close"></button>
+            </div>
+            <div class="modal-body p-1 text-center bg-black d-flex align-items-center justify-content-center"
+                style="min-height: 300px; max-height: 80vh;">
+                <img id="photoZoomImg" src="" alt="Zoom Foto" class="img-fluid"
+                    style="max-height: 75vh; object-fit: contain;">
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    const analyticsPayload = {{ analytics | tojson }};
+
+    function zoomPhoto(imgSrc, title) {
+        document.getElementById('photoZoomImg').src = imgSrc;
+        document.getElementById('photoZoomTitle').textContent = title || 'Pratinjau Foto Temuan';
+        const modal = new bootstrap.Modal(document.getElementById('photoZoomModal'));
+        modal.show();
+    }
+
+    function switchMiniTab(tab) {
+        const hazEl = document.getElementById('miniTabHazard');
+        const picEl = document.getElementById('miniTabPic');
+        const hazBtn = document.getElementById('tabHazardBtn');
+        const picBtn = document.getElementById('tabPicBtn');
+        if (tab === 'pic') {
+            hazEl.classList.add('d-none');
+            picEl.classList.remove('d-none');
+            picBtn.className = 'btn btn-sm btn-primary py-0.5 px-2';
+            hazBtn.className = 'btn btn-sm btn-outline-secondary py-0.5 px-2';
+        } else {
+            picEl.classList.add('d-none');
+            hazEl.classList.remove('d-none');
+            hazBtn.className = 'btn btn-sm btn-primary py-0.5 px-2';
+            picBtn.className = 'btn btn-sm btn-outline-secondary py-0.5 px-2';
+        }
+    }
+
+    function changeMainDonutMode(selectedMode) {
+        if (!window.GenbaCharts || !analyticsPayload) return;
+        GenbaCharts.renderStatusDonut('mainStatusDonutChart', analyticsPayload.summary, {
+            height: 170,
+            mode: selectedMode
+        });
+    }
+
+    function toggleAnalyticsSection() {
+        const body = document.getElementById('dashboardChartsCollapse');
+        const label = document.getElementById('toggleChartsLabel');
+        if (!body) return;
+        const isHidden = body.classList.toggle('d-none');
+        label.textContent = isHidden ? 'Tampilkan Grafik' : 'Sembunyikan Grafik';
+        localStorage.setItem('fuji_hide_dashboard_charts', isHidden ? '1' : '0');
+        if (!isHidden) {
+            initMainDashboardCharts();
+        }
+    }
+
+    function initMainDashboardCharts() {
+        if (!window.GenbaCharts || !analyticsPayload) return;
+        const modeSel = document.getElementById('mainDonutDropdown');
+        const currentMode = modeSel ? modeSel.value : 'ALL';
+        GenbaCharts.renderLineBarChart('mainLineBarChart', analyticsPayload.lines, {
+            height: 205
+        });
+        GenbaCharts.renderStatusDonut('mainStatusDonutChart', analyticsPayload.summary, {
+            height: 170,
+            mode: currentMode
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const savedHide = localStorage.getItem('fuji_hide_dashboard_charts') === '1';
+        if (savedHide) {
+            document.getElementById('dashboardChartsCollapse')?.classList.add('d-none');
+            const lbl = document.getElementById('toggleChartsLabel');
+            if (lbl) lbl.textContent = 'Tampilkan Grafik';
+        } else {
+            initMainDashboardCharts();
+        }
+    });
+</script>
+{% endblock %}

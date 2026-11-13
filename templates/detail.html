@@ -171,7 +171,7 @@
                         <div class="border rounded p-2 bg-light">
                             <span class="fw-bold text-secondary d-block">Section Head / Safety</span>
                             <div class="d-flex align-items-center justify-content-center fw-bold text-success" style="height: 60px;">
-                                {% if finding.judg == 'OK' %}VERIFIED OK{% endif %}
+                                {% if finding.judg in ['O', 'OK'] %}VERIFIED OK{% endif %}
                             </div>
                             <div class="border-top pt-1 text-muted">( ........................................ )</div>
                         </div>

@@ -234,6 +234,7 @@
                                         </button>
                                     </div>
                                     <div class="d-flex flex-column gap-1 flex-grow-1">
+                                        <input type="hidden" name="clear_foto_fix" id="clearFotoFixInput" value="0">
                                         <input type="file" id="fotoFixInput" name="foto_fix" accept="image/*" class="d-none" onchange="handleFixSelectEdit(this)">
                                         <input type="file" id="fotoFixNativeInput" accept="image/*" capture="environment" class="d-none" onchange="handleNativeFixSelect(this)">
                                         
@@ -428,6 +429,8 @@
 
     function handleFixSelectEdit(input) {
         if (input.files && input.files[0]) {
+            const clearFlag = document.getElementById('clearFotoFixInput');
+            if (clearFlag) clearFlag.value = "0";
             previewFile(input, 'previewFix', 'noFixText');
             const removeBtn = document.getElementById('removeFixBtn');
             if (removeBtn) removeBtn.classList.remove('d-none');
@@ -438,6 +441,8 @@
 
     function removeFixPhotoEdit() {
         document.getElementById('fotoFixInput').value = "";
+        const clearFlag = document.getElementById('clearFotoFixInput');
+        if (clearFlag) clearFlag.value = "1";
         const preview = document.getElementById('previewFix');
         preview.src = "#";
         preview.classList.add('d-none');

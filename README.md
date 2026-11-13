@@ -1,17 +1,20 @@
 # 🛡️ PT. FUJISEAT INDONESIA - Sistem Monitoring Temuan Safety & Genba D26A
 
-Aplikasi berbasis web untuk pencatatan temuan safety (*unsafe conditions / near miss*), dokumentasi foto sebelum dan sesudah perbaikan (*Before & After*), integrasi ekspor/impor Excel, dan lembar verifikasi Genba.
+Aplikasi berbasis web untuk pencatatan temuan safety (*unsafe conditions / near miss*), dokumentasi foto sebelum dan sesudah perbaikan (*Before & After*), integrasi ekspor/impor Excel, dan lembar verifikasi Genba dengan database **MySQL / MariaDB (XAMPP)**.
 
 ---
 
 ## 🚀 Cara Menjalankan Aplikasi
+
+1. Pastikan layanan **MySQL** pada XAMPP sudah aktif (*Start*).
+2. Database `safety_genba` dapat diimpor melalui phpMyAdmin menggunakan file **`safety_genba.sql`**, atau akan dibuat secara otomatis dari `safety_genba.sql` saat aplikasi pertama kali dijalankan.
 
 ### Opsi 1: Satu Klik (Windows)
 Cukup klik ganda file **`run.bat`** di dalam folder ini. Browser akan otomatis terbuka ke alamat `http://127.0.0.1:5050`.
 
 ### Opsi 2: Lewat Terminal / Command Prompt
 ```bash
-cd "C:\Project\safety_genba_system"
+cd "c:\project_fuji\safety-genba"
 python app.py
 ```
 Lalu buka browser di: **`http://127.0.0.1:5050`**
@@ -34,41 +37,40 @@ Lalu buka browser di: **`http://127.0.0.1:5050`**
 3. **🔄 Tindak Lanjut & Foto Sesudah Perbaikan (*After*)**:
    - Update temuan saat perbaikan selesai.
    - Unggah foto bukti kondisi setelah diperbaiki (*After*).
-   - Perubahan status otomatis menjadi **OK (SELESAI)** dan pencatatan tanggal realisasi (*Fix Date*).
+   - Perubahan status otomatis menjadi **OK (SELESAI)** dan pencatatan realisasi perbaikan (*Fix*).
 
 4. **📊 Dashboard & Monitoring Real-time**:
    - Ringkasan indikator: **Total Temuan**, **On Progress**, **OK (Selesai)**, dan persentase penyelesaian.
-   - Filter interaktif berdasarkan **Line** dan **Status**, serta kolom pencarian kata kunci.
+   - Filter interaktif berdasarkan **Periode (Bulanan/Mingguan/Tahunan)**, **Line**, **PIC**, dan **Status**, serta kolom pencarian kata kunci.
    - Pilihan tampilan: **Tampilan Kartu Visual (Card View)** dengan foto Before-After atau **Tampilan Tabel Spreadsheet (Table View)**.
 
 5. **📑 Export ke Format Excel Asli (PT. FUJISEAT INDONESIA)**:
-   - Menghasilkan file Excel `.xlsx` dengan 2 Sheet:
-     - **Sheet 1 (`Rekap Temuan Safety`)**: Tabel lengkap dengan status dan indikator foto.
-     - **Sheet 2 (`FORMAT GENBA D26A`)**: Format kolom bersanding (FB 1-4 & FC 1-4) persis sesuai template laporan pabrik.
+   - Menghasilkan file Excel `.xlsx` dengan 2 Sheet sesuai template standar pabrik PT. Fujiseat Indonesia.
 
 6. **📥 Import dari Excel / CSV**:
-   - Fitur unggah file Excel untuk memasukkan data temuan lama secara otomatis ke dalam sistem database.
+   - Fitur unggah file Excel untuk memasukkan data temuan secara otomatis ke dalam sistem database MySQL.
 
 7. **🖨️ Lembar Verifikasi & Cetak PDF**:
-   - Halaman detail temuan siap cetak format A4 lengkap dengan kolom verifikasi tanda tangan: **Auditor Genba**, **PIC Perbaikan**, dan **Safety Section Head**.
+   - Halaman detail temuan siap cetak format A4 lengkap dengan kolom verifikasi tanda tangan.
 
 ---
 
 ## 📁 Struktur Folder Proyek
 
 ```text
-safety_genba_system/
+safety-genba/
 │
 ├── app.py                 # Server Flask dan routing aplikasi
-├── database.py            # SQLite database helper & schema
+├── database.py            # Koneksi dan fungsi query database MySQL
+├── safety_genba.sql       # Skema tabel & data awal (seed) MySQL
 ├── excel_handler.py       # Modul ekspor dan impor Excel (openpyxl)
-├── test_app.py            # Script pengujian otomatis sistem
 ├── run.bat                # Shortcut peluncuran aplikasi satu klik
-├── safety_genba.db        # Database lokal SQLite (berisi 18 data awal dari Excel)
+├── requirements.txt       # Daftar dependensi library Python
 │
-├── uploads/               # Direktori penyimpanan foto Before & After
+├── static/                # Aset statis offline (Bootstrap, SweetAlert2, CSS, Logo)
+├── uploads/               # Direktori penyimpanan foto temuan (Before/After/Fix)
 │
-└── templates/             # Template antarmuka web (Tailwind CSS)
+└── templates/             # Template antarmuka web
     ├── base.html          # Layout utama dan navigasi responsif
     ├── index.html         # Dashboard temuan, statistik, dan filter
     ├── input.html         # Form input temuan + kamera HP

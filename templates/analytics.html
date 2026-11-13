@@ -1,0 +1,449 @@
+{% extends "base.html" %}
+
+{% block title %}Analitik & Statistik Safety Genba - PT. FUJISEAT INDONESIA{% endblock %}
+
+{% block content %}
+<div class="d-flex flex-column gap-3">
+
+    <!-- Header & Filter Toolbar -->
+    <div class="card shadow-sm border" style="border-radius: 10px;">
+        <div class="card-body p-3">
+            <div class="d-flex flex-wrap justify-content-between align-items-center gap-2 mb-3 pb-2 border-bottom">
+                <div class="d-flex align-items-center gap-2">
+                    <div class="kpi-icon-box bg-primary text-white">
+                        <svg width="20" height="20" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
+                        </svg>
+                    </div>
+                    <div>
+                        <h5 class="fw-bold text-dark mb-0" style="font-size: 1rem;">Dashboard Analitik &amp; Statistik
+                            Safety Genba D26A</h5>
+                    </div>
+                </div>
+                <div class="d-flex align-items-center gap-2 no-print">
+                    <button type="button" onclick="window.print()"
+                        class="btn btn-sm btn-outline-dark d-inline-flex align-items-center gap-1"
+                        style="font-size: 0.75rem;">
+                        <svg width="14" height="14" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                        </svg>
+                        <span>Cetak Laporan Analitik</span>
+                    </button>
+                    <a href="{{ url_for('index', period_type=period_type, period_val=period_val, line=line_filter, pic=pic_filter) }}"
+                        class="btn btn-sm btn-primary d-inline-flex align-items-center gap-1"
+                        style="font-size: 0.75rem;">
+                        <span>Ke Tabel Monitoring &rarr;</span>
+                    </a>
+                </div>
+            </div>
+
+            <!-- Analytics Filter Form -->
+            <form method="GET" action="{{ url_for('analytics_dashboard') }}" id="analyticsFilterForm"
+                class="row g-2 align-items-end no-print">
+                <div class="col-6 col-md-3">
+                    <label class="form-label mb-1 text-muted fw-bold" style="font-size: 0.6875rem;">CAKUPAN
+                        PERIODE</label>
+                    <select name="period_type" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-bold border-primary text-primary">
+                        <option value="all" {% if period_type=='all' %}selected{% endif %}>Semua Periode (Keseluruhan)
+                        </option>
+                        <option value="month" {% if period_type=='month' %}selected{% endif %}>Perbulan (Bulanan)
+                        </option>
+                        <option value="week" {% if period_type=='week' %}selected{% endif %}>Perminggu (Mingguan)
+                        </option>
+                        <option value="year" {% if period_type=='year' %}selected{% endif %}>Pertahun (Tahunan)</option>
+                    </select>
+                </div>
+
+                {% if period_type == 'month' %}
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold" style="font-size: 0.6875rem;">PILIH BULAN</label>
+                    <select name="period_val" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        {% for m in available_periods['months'] %}
+                        <option value="{{ m }}" {% if period_val==m %}selected{% endif %}>{{ m }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% elif period_type == 'year' %}
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold" style="font-size: 0.6875rem;">PILIH TAHUN</label>
+                    <select name="period_val" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        {% for y in available_periods['years'] %}
+                        <option value="{{ y }}" {% if period_val==y %}selected{% endif %}>Tahun {{ y }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                {% elif period_type == 'week' %}
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold" style="font-size: 0.6875rem;">TANGGAL
+                        REFERENSI</label>
+                    <input type="date" name="period_val" value="{{ period_val }}" onchange="this.form.submit()"
+                        class="form-control form-control-sm">
+                </div>
+                {% else %}
+                <input type="hidden" name="period_val" value="">
+                {% endif %}
+
+                <div class="col-6 col-md-3">
+                    <label class="form-label mb-1 text-muted fw-bold" style="font-size: 0.6875rem;">FILTER LINE
+                        PRODUKSI</label>
+                    <select name="line" id="analyticsLineSelect" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        <option value="ALL" {% if line_filter=='ALL' %}selected{% endif %}>Semua Line (FB 1 - FC 4)
+                        </option>
+                        {% for l in lines %}
+                        <option value="{{ l }}" {% if line_filter==l %}selected{% endif %}>Line {{ l }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-6 col-md-2">
+                    <label class="form-label mb-1 text-muted fw-bold" style="font-size: 0.6875rem;">FILTER PIC</label>
+                    <select name="pic" id="analyticsPicSelect" onchange="this.form.submit()"
+                        class="form-select form-select-sm fw-semibold">
+                        <option value="ALL" {% if pic_filter=='ALL' %}selected{% endif %}>Semua PIC</option>
+                        {% for p in pics %}
+                        <option value="{{ p }}" {% if pic_filter|lower==p|lower %}selected{% endif %}>{{ p }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-12 col-md-2 d-flex align-items-end">
+                    {% if line_filter != 'ALL' or pic_filter != 'ALL' or period_type != 'all' %}
+                    <a href="{{ url_for('analytics_dashboard', period_type='all') }}"
+                        class="btn btn-sm btn-outline-danger w-100">Reset Filter</a>
+                    {% endif %}
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- EXECUTIVE SUMMARY INSIGHT CARDS                          -->
+    <!-- ======================================================== -->
+    <div class="row g-2 g-md-3">
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card-kpi h-100">
+                <div class="kpi-label">Total Temuan</div>
+                <div class="kpi-value">{{ analytics.summary.total }}</div>
+                <small class="text-muted" style="font-size: 0.68rem;">Kasus Tercatat</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card-kpi h-100" style="border-left: 4px solid #10b981;">
+                <div class="kpi-label text-success">Selesai (O)</div>
+                <div class="kpi-value text-success">{{ analytics.summary.ok }}</div>
+                <small class="text-muted" style="font-size: 0.68rem;">Rasio: <strong>{{ analytics.summary.pct_closed
+                        }}%</strong></small>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card-kpi h-100" style="border-left: 4px solid #f59e0b;">
+                <div class="kpi-label" style="color: #b45309;">On Progress (X)</div>
+                <div class="kpi-value" style="color: #d97706;">{{ analytics.summary.on_progress }}</div>
+                <small class="text-muted" style="font-size: 0.68rem;">Menunggu Perbaikan</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card-kpi h-100" style="border-left: 4px solid #ef4444;">
+                <div class="kpi-label text-danger">Overdue (Terlambat)</div>
+                <div class="kpi-value text-danger">{{ analytics.summary.overdue }}</div>
+                <small class="text-muted" style="font-size: 0.68rem;">Lewat Target Due Date</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card-kpi h-100" style="border-left: 4px solid #1e3a8a;">
+                <div class="kpi-label">Line Tertinggi</div>
+                <div class="kpi-value" style="font-size: 1.25rem; color: #1e3a8a;">{{ analytics.summary.top_line }}
+                </div>
+                <small class="text-muted" style="font-size: 0.68rem;"><strong>{{ analytics.summary.top_line_count
+                        }}</strong> temuan tercatat</small>
+            </div>
+        </div>
+        <div class="col-6 col-md-4 col-xl-2">
+            <div class="card-kpi h-100" style="border-left: 4px solid #7c3aed;">
+                <div class="kpi-label">Risiko Dominan</div>
+                <div class="fw-bold text-dark text-truncate mt-1" style="font-size: 0.9rem;"
+                    title="{{ analytics.summary.top_hazard }}">{{ analytics.summary.top_hazard }}</div>
+                <small class="text-muted" style="font-size: 0.68rem;"><strong>{{ analytics.summary.top_hazard_count
+                        }}</strong> kemunculan</small>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- ROW 1: BAR CHART PER LINE & STATUS DONUT                 -->
+    <!-- ======================================================== -->
+    <div class="row g-3">
+        <!-- Stacked Bar per Line -->
+        <div class="col-12 col-lg-8">
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h6 class="analytics-card-title">
+                        <span>1. Statistik Temuan &amp; Penyelesaian per Line Produksi (FB 1 – FC 4)</span>
+                    </h6>
+                    <div class="d-flex align-items-center gap-3" style="font-size: 0.72rem;">
+                        <span class="d-inline-flex align-items-center gap-1"><span
+                                style="width:10px;height:10px;border-radius:2px;background:#10b981;display:inline-block;"></span>Selesai
+                            (O)</span>
+                        <span class="d-inline-flex align-items-center gap-1"><span
+                                style="width:10px;height:10px;border-radius:2px;background:#f97316;display:inline-block;"></span>On
+                            Progress (X)</span>
+                        <span class="d-inline-flex align-items-center gap-1"><span
+                                style="width:10px;height:10px;border-radius:2px;background:#dc2626;display:inline-block;"></span>Ada
+                            Overdue</span>
+                    </div>
+                </div>
+                <div class="analytics-card-body">
+                    <canvas id="analyticsLineChart" height="255"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Donut Chart Status & Breakdown -->
+        <div class="col-12 col-lg-4">
+            <div class="analytics-card">
+                    <div class="analytics-card-header gap-2">
+                        <h6 class="analytics-card-title">2. Proporsi Status Judgement</h6>
+                        <select id="analyticsDonutDropdown" class="form-select form-select-sm py-0.5 px-2 fw-semibold"
+                            style="width: auto; min-width: 120px; font-size: 0.72rem;"
+                            onchange="changeAnalyticsDonutMode(this.value)">
+                            <option value="ALL">Semua Status</option>
+                            <option value="O">Selesai (O)</option>
+                            <option value="X">Belum (X)</option>
+                            <option value="OVERDUE">Overdue</option>
+                        </select>
+                    </div>
+                    <div class="analytics-card-body d-flex flex-column justify-content-between">
+                        <canvas id="analyticsDonutChart" height="200"></canvas>
+                        <div class="border-top pt-2 mt-2">
+                            <div class="d-flex justify-content-between align-items-center py-1"
+                                style="font-size: 0.75rem;">
+                                <span class="d-flex align-items-center gap-1.5"><span
+                                        style="width:9px;height:9px;border-radius:50%;background:#10b981;display:inline-block;"></span>Selesai
+                                    Diperbaiki (O)</span>
+                                <strong>{{ analytics.summary.ok }} ({{ analytics.summary.pct_closed }}%)</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1"
+                                style="font-size: 0.75rem;">
+                                <span class="d-flex align-items-center gap-1.5"><span
+                                        style="width:9px;height:9px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>On
+                                    Progress - Sesuai Jadwal</span>
+                                <strong>{{ analytics.summary.ontime_progress }}</strong>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center py-1"
+                                style="font-size: 0.75rem;">
+                                <span class="d-flex align-items-center gap-1.5"><span
+                                        style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;"></span>Terlambat
+                                    / Melewati Due Date</span>
+                                <strong class="text-danger">{{ analytics.summary.overdue }}</strong>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- ======================================================== -->
+        <!-- ROW 2: TREND TIMELINE & PARETO POTENSI BAHAYA            -->
+        <!-- ======================================================== -->
+        <div class="row g-3">
+            <!-- Trend Timeline -->
+            <div class="col-12 col-lg-6">
+                <div class="analytics-card">
+                    <div class="analytics-card-header">
+                        <h6 class="analytics-card-title">3. Tren Harian Temuan Baru vs Selesai Diperbaiki</h6>
+                        <div class="d-flex align-items-center gap-2" style="font-size: 0.7rem;">
+                            <span class="text-primary fw-bold">&#9679; Total Temuan</span>
+                            <span class="text-success fw-bold">&#9679; Selesai (O)</span>
+                        </div>
+                    </div>
+                    <div class="analytics-card-body">
+                        <canvas id="analyticsTrendChart" height="245"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pareto Potensi Bahaya -->
+            <div class="col-12 col-lg-6">
+                <div class="analytics-card">
+                    <div class="analytics-card-header">
+                        <h6 class="analytics-card-title">4. Analisis Pareto Top Potensi Bahaya (Hazard)</h6>
+                    </div>
+                    <div class="analytics-card-body">
+                        {% if analytics.hazards|length == 0 %}
+                        <div class="text-center text-muted py-5">Belum ada data potensi bahaya</div>
+                        {% else %}
+                        {% set max_h = analytics.hazards[0].count if analytics.hazards else 1 %}
+                        <div class="d-flex flex-column gap-2">
+                            {% for h in analytics.hazards %}
+                                <div class="hazard-bar-row d-block border-bottom pb-1.5">
+                                    <div class="d-flex justify-content-between align-items-center mb-1"
+                                        style="font-size: 0.76rem;">
+                                        <span class="fw-bold text-dark">{{ loop.index }}. {{ h.label }}</span>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{
+                                            h.count }} temuan ({{ h.pct }}%)</span>
+                                    </div>
+                                    <div class="hazard-bar-track">
+                                        <div class="hazard-bar-fill"
+                                            style="width: {{ (h.count / max_h * 100)|round(1) }}%;"></div>
+                                    </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- ======================================================== -->
+    <!-- ROW 3: KINERJA PIC & HOTSPOT HEATMAP LINE vs POS         -->
+    <!-- ======================================================== -->
+    <div class="row g-3">
+        <!-- PIC Leaderboard Table -->
+        <div class="col-12 col-lg-5">
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h6 class="analytics-card-title">5. Evaluasi Kinerja Penyelesaian per PIC</h6>
+                </div>
+                <div class="analytics-card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table-genba mb-0">
+                            <thead>
+                                <tr>
+                                    <th>Nama PIC</th>
+                                    <th>Total</th>
+                                    <th>Selesai (O)</th>
+                                    <th>Belum (X)</th>
+                                    <th>Overdue</th>
+                                    <th style="min-width: 110px;">Progres</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for p in analytics.pics %}
+                                <tr>
+                                    <td class="fw-bold">
+                                        <a href="{{ url_for('index', period_type=period_type, period_val=period_val, line=line_filter, pic=p.pic) }}"
+                                            class="text-decoration-none text-primary">
+                                            {{ p.pic }}
+                                        </a>
+                                    </td>
+                                    <td class="text-center fw-bold">{{ p.total }}</td>
+                                    <td class="text-center text-success fw-bold">{{ p.ok }}</td>
+                                    <td class="text-center text-danger fw-bold">{{ p.on_progress }}</td>
+                                    <td class="text-center">
+                                        {% if p.overdue > 0 %}
+                                        <span class="badge-overdue">{{ p.overdue }}</span>
+                                        {% else %}
+                                        <span class="text-muted">0</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>
+                                        <div class="d-flex align-items-center gap-1.5">
+                                            <div class="progress flex-grow-1" style="height: 7px;">
+                                                <div class="progress-bar bg-success" style="width: {{ p.pct }}%;"></div>
+                                            </div>
+                                            <span class="fw-bold" style="font-size: 0.7rem; min-width: 34px;">{{ p.pct
+                                                }}%</span>
+                                        </div>
+                                    </td>
+                                </tr>
+                                {% else %}
+                                <tr>
+                                    <td colspan="6" class="text-center text-muted py-4">Belum ada data PIC</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Hotspot Matrix Line vs Pos -->
+        <div class="col-12 col-lg-7">
+            <div class="analytics-card">
+                <div class="analytics-card-header">
+                    <h6 class="analytics-card-title">6. Peta Titik Rawan (Hotspot Matrix Line vs Pos Stasiun Kerja)</h6>
+                    <span class="text-muted" style="font-size: 0.68rem;">Angka menunjukkan jumlah temuan di Pos
+                        tersebut</span>
+                </div>
+                <div class="analytics-card-body p-2">
+                    {% set pos_cols = ['Pos 1', 'Pos 2', 'Pos 3', 'Pos 4', 'Pos 5', 'Pos 6', 'Pos 7', 'Pos 8', 'Pos 9',
+                    'Pos 10', 'Pos 11', 'QC'] %}
+                    <div class="table-responsive">
+                        <table class="table table-sm table-bordered mb-0 align-middle" style="font-size: 0.72rem;">
+                            <thead class="table-light text-center">
+                                <tr>
+                                    <th style="min-width: 62px;">Line</th>
+                                    {% for pc in pos_cols %}
+                                    <th>{{ pc.replace('Pos ', 'P') }}</th>
+                                    {% endfor %}
+                                    <th>Total</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for l_item in analytics.lines %}
+                                {% set l_name = l_item.line %}
+                                {% set l_map = analytics.pos_hotspot.get(l_name, {}) %}
+                                <tr>
+                                    <td class="fw-bold text-center bg-light">
+                                        <a href="{{ url_for('index', line=l_name, period_type=period_type, period_val=period_val) }}"
+                                            class="text-decoration-none text-dark">{{ l_name }}</a>
+                                    </td>
+                                    {% for pc in pos_cols %}
+                                    {% set cnt = l_map.get(pc, 0) %}
+                                    <td class="p-1">
+                                        <div class="heatmap-cell {% if cnt == 0 %}heat-0{% elif cnt == 1 %}heat-1{% elif cnt == 2 %}heat-2{% elif cnt == 3 %}heat-3{% else %}heat-high{% endif %}"
+                                            title="Line {{ l_name }} - {{ pc }}: {{ cnt }} temuan">
+                                            {{ cnt if cnt > 0 else '-' }}
+                                        </div>
+                                    </td>
+                                    {% endfor %}
+                                    <td class="text-center fw-bold bg-light">{{ l_item.total }}</td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+<script>
+    const fullAnalytics = {{ analytics | tojson }};
+
+    function changeAnalyticsDonutMode(selectedMode) {
+        if (!window.GenbaCharts || !fullAnalytics) return;
+        GenbaCharts.renderStatusDonut('analyticsDonutChart', fullAnalytics.summary, {
+            height: 200,
+            mode: selectedMode
+        });
+    }
+
+    document.addEventListener('DOMContentLoaded', function () {
+        if (!window.GenbaCharts || !fullAnalytics) return;
+
+        GenbaCharts.renderLineBarChart('analyticsLineChart', fullAnalytics.lines, {
+            height: 255
+        });
+
+        GenbaCharts.renderStatusDonut('analyticsDonutChart', fullAnalytics.summary, {
+            height: 200,
+            mode: 'ALL'
+        });
+
+        GenbaCharts.renderTrendChart('analyticsTrendChart', fullAnalytics.trend, {
+            height: 245
+        });
+    });
+</script>
+{% endblock %}
