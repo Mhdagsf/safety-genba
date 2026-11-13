@@ -49,17 +49,46 @@ svg {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 30px;
-  height: 28px;
+  width: 26px;
+  height: 26px;
   padding: 0 !important;
-  border-radius: 6px;
+  border-radius: 5px;
   line-height: 1;
 }
 
 .btn-aksi svg {
-  width: 15px !important;
-  height: 15px !important;
+  width: 14px !important;
+  height: 14px !important;
   flex-shrink: 0;
+}
+
+/* Sticky Action Column so Aksi is never cut off on any screen */
+.table-genba th.col-aksi-sticky {
+  position: sticky;
+  right: 0;
+  z-index: 2;
+  background: linear-gradient(180deg, #f8fafc 0%, #e2e8f0 100%) !important;
+  box-shadow: -1px 0 0 #cbd5e1;
+}
+
+.table-genba td.col-aksi-sticky {
+  position: sticky;
+  right: 0;
+  z-index: 1;
+  background-color: #ffffff;
+  box-shadow: -1px 0 0 #f1f5f9;
+}
+
+.table-genba tbody tr:hover td.col-aksi-sticky {
+  background-color: #f8fafc;
+}
+
+.table-genba tbody tr.row-overdue td.col-aksi-sticky {
+  background-color: #fff5f5;
+}
+
+.table-genba tbody tr.row-overdue:hover td.col-aksi-sticky {
+  background-color: #fee2e2;
 }
 
 svg.icon-lg {

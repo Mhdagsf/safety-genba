@@ -505,18 +505,18 @@
             <table class="table-genba mb-0">
                 <thead>
                     <tr>
-                        <th style="width: 36px;">No</th>
-                        <th style="width: 82px;">Tgl</th>
-                        <th style="width: 62px;">Line</th>
-                        <th style="width: 70px;">Pos</th>
-                        <th style="min-width: 185px;">Temuan &amp; Foto Before</th>
-                        <th style="min-width: 135px;">Potensi Bahaya</th>
-                        <th style="min-width: 185px;">Perbaikan &amp; Foto After</th>
-                        <th style="width: 88px;">Due Date</th>
-                        <th style="min-width: 155px;">Realisasi (Fix)</th>
-                        <th style="width: 75px;">PIC</th>
-                        <th style="width: 56px;">Judg</th>
-                        <th style="width: 112px; min-width: 112px;">Aksi</th>
+                        <th style="width: 34px;">No</th>
+                        <th style="width: 78px;">Tgl</th>
+                        <th style="width: 54px;">Line</th>
+                        <th style="width: 58px;">Pos</th>
+                        <th style="width: 18%;">Temuan &amp; Foto Before</th>
+                        <th style="width: 13%;">Potensi Bahaya</th>
+                        <th style="width: 18%;">Perbaikan &amp; Foto After</th>
+                        <th style="width: 82px;">Due Date</th>
+                        <th style="width: 15%;">Realisasi (Fix)</th>
+                        <th style="width: 68px;">PIC</th>
+                        <th style="width: 48px;">Judg</th>
+                        <th class="col-aksi-sticky" style="width: 96px; min-width: 96px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -614,7 +614,7 @@
                         </td>
 
                         <!-- Actions (Icon Only) -->
-                        <td class="text-center text-nowrap">
+                        <td class="text-center text-nowrap col-aksi-sticky">
                             <div class="d-inline-flex align-items-center gap-1">
                                 <a href="{{ url_for('detail_finding', finding_id=item.id) }}"
                                     class="btn btn-sm btn-outline-secondary btn-aksi"
