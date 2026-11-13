@@ -209,36 +209,69 @@
             <div class="analytics-card">
                     <div class="analytics-card-header gap-2">
                         <h6 class="analytics-card-title">2. Proporsi Status Judgement</h6>
-                        <select id="analyticsDonutDropdown" class="form-select form-select-sm py-0.5 px-2 fw-semibold"
-                            style="width: auto; min-width: 120px; font-size: 0.72rem;"
-                            onchange="changeAnalyticsDonutMode(this.value)">
-                            <option value="ALL">Semua Status</option>
-                            <option value="O">Selesai (O)</option>
-                            <option value="X">Belum (X)</option>
-                            <option value="OVERDUE">Overdue</option>
-                        </select>
+                        <div class="dropdown">
+                            <button class="btn btn-sm btn-outline-secondary py-1 px-1.5 d-inline-flex align-items-center justify-content-center"
+                                type="button" id="analyticsDonutHamburgerBtn" data-bs-toggle="dropdown" aria-expanded="false"
+                                title="Pilih Filter Status Grafik">
+                                <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M4 6h16M4 12h16M4 18h16" />
+                                </svg>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1" aria-labelledby="analyticsDonutHamburgerBtn"
+                                id="analyticsDonutMenu" style="font-size: 0.76rem; min-width: 165px;">
+                                <li>
+                                    <button type="button" class="dropdown-item d-flex align-items-center justify-content-between py-1.5 active"
+                                        data-mode="ALL" onclick="changeAnalyticsDonutMode('ALL', this)">
+                                        <span>Semua Status</span>
+                                        <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">{{ analytics.summary.total }}</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item d-flex align-items-center justify-content-between py-1.5"
+                                        data-mode="O" onclick="changeAnalyticsDonutMode('O', this)">
+                                        <span class="d-inline-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;margin-right:2px;"></span>Selesai (O)</span>
+                                        <span class="badge bg-success-subtle text-success border border-success-subtle">{{ analytics.summary.ok }}</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item d-flex align-items-center justify-content-between py-1.5"
+                                        data-mode="X" onclick="changeAnalyticsDonutMode('X', this)">
+                                        <span class="d-inline-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;margin-right:2px;"></span>Belum (X)</span>
+                                        <span class="badge bg-warning-subtle text-dark border border-warning-subtle">{{ analytics.summary.on_progress }}</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item d-flex align-items-center justify-content-between py-1.5"
+                                        data-mode="OVERDUE" onclick="changeAnalyticsDonutMode('OVERDUE', this)">
+                                        <span class="d-inline-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;margin-right:2px;"></span>Overdue</span>
+                                        <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ analytics.summary.overdue }}</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
                     </div>
                     <div class="analytics-card-body d-flex flex-column justify-content-between">
                         <canvas id="analyticsDonutChart" height="200"></canvas>
                         <div class="border-top pt-2 mt-2">
                             <div class="d-flex justify-content-between align-items-center py-1"
                                 style="font-size: 0.75rem;">
-                                <span class="d-flex align-items-center gap-1.5"><span
-                                        style="width:9px;height:9px;border-radius:50%;background:#10b981;display:inline-block;"></span>Selesai
+                                <span class="d-flex align-items-center gap-2"><span
+                                        style="width:9px;height:9px;border-radius:50%;background:#10b981;display:inline-block;margin-right:2px;"></span>Selesai
                                     Diperbaiki (O)</span>
                                 <strong>{{ analytics.summary.ok }} ({{ analytics.summary.pct_closed }}%)</strong>
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-1"
                                 style="font-size: 0.75rem;">
-                                <span class="d-flex align-items-center gap-1.5"><span
-                                        style="width:9px;height:9px;border-radius:50%;background:#f59e0b;display:inline-block;"></span>On
+                                <span class="d-flex align-items-center gap-2"><span
+                                        style="width:9px;height:9px;border-radius:50%;background:#f59e0b;display:inline-block;margin-right:2px;"></span>On
                                     Progress - Sesuai Jadwal</span>
                                 <strong>{{ analytics.summary.ontime_progress }}</strong>
                             </div>
                             <div class="d-flex justify-content-between align-items-center py-1"
                                 style="font-size: 0.75rem;">
-                                <span class="d-flex align-items-center gap-1.5"><span
-                                        style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;"></span>Terlambat
+                                <span class="d-flex align-items-center gap-2"><span
+                                        style="width:9px;height:9px;border-radius:50%;background:#ef4444;display:inline-block;margin-right:2px;"></span>Terlambat
                                     / Melewati Due Date</span>
                                 <strong class="text-danger">{{ analytics.summary.overdue }}</strong>
                             </div>
@@ -421,7 +454,13 @@
 <script>
     const fullAnalytics = {{ analytics | tojson }};
 
-    function changeAnalyticsDonutMode(selectedMode) {
+    function changeAnalyticsDonutMode(selectedMode, btnEl) {
+        const menu = document.getElementById('analyticsDonutMenu');
+        if (menu) {
+            menu.querySelectorAll('.dropdown-item').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-mode') === selectedMode);
+            });
+        }
         if (!window.GenbaCharts || !fullAnalytics) return;
         GenbaCharts.renderStatusDonut('analyticsDonutChart', fullAnalytics.summary, {
             height: 200,

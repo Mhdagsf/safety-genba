@@ -117,10 +117,6 @@
                 </div>
             </div>
             <div class="d-flex align-items-center gap-2">
-                <a href="{{ url_for('analytics_dashboard', period_type=period_type, period_val=period_val, line=line_filter, pic=pic_filter) }}"
-                    class="btn btn-sm btn-link text-decoration-none fw-semibold py-0 px-1" style="font-size: 0.74rem;">
-                    Buka Analitik Penuh &rarr;
-                </a>
                 <button class="btn btn-sm btn-outline-secondary py-0.5 px-2 d-flex align-items-center gap-1"
                     type="button" id="toggleChartsBtn" onclick="toggleAnalyticsSection()" style="font-size: 0.72rem;">
                     <span id="toggleChartsLabel">Sembunyikan Grafik</span>
@@ -156,15 +152,48 @@
                 <div class="col-12 col-md-6 col-lg-3">
                     <div class="analytics-card">
                         <div class="analytics-card-header gap-2">
-                            <h6 class="analytics-card-title text-nowrap">Proporsi Status Judgement</h6>
-                            <select id="mainDonutDropdown" class="form-select form-select-sm py-0.5 px-2 fw-semibold"
-                                style="width: auto; min-width: 115px; font-size: 0.7rem;"
-                                onchange="changeMainDonutMode(this.value)">
-                                <option value="ALL">Semua Status</option>
-                                <option value="O">Selesai (O)</option>
-                                <option value="X">Belum (X)</option>
-                                <option value="OVERDUE">Overdue</option>
-                            </select>
+                            <h6 class="analytics-card-title">Proporsi Status Judgement</h6>
+                            <div class="dropdown">
+                                <button class="btn btn-sm btn-outline-secondary py-1 px-1.5 d-inline-flex align-items-center justify-content-center"
+                                    type="button" id="mainDonutHamburgerBtn" data-bs-toggle="dropdown" aria-expanded="false"
+                                    title="Pilih Filter Status Grafik">
+                                    <svg width="16" height="16" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M4 6h16M4 12h16M4 18h16" />
+                                    </svg>
+                                </button>
+                                <ul class="dropdown-menu dropdown-menu-end shadow-sm border py-1" aria-labelledby="mainDonutHamburgerBtn"
+                                    id="mainDonutMenu" style="font-size: 0.76rem; min-width: 165px;">
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center justify-content-between py-1.5 active"
+                                            data-mode="ALL" onclick="changeMainDonutMode('ALL', this)">
+                                            <span>Semua Status</span>
+                                            <span class="badge bg-secondary-subtle text-secondary border border-secondary-subtle">{{ analytics.summary.total }}</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center justify-content-between py-1.5"
+                                            data-mode="O" onclick="changeMainDonutMode('O', this)">
+                                            <span class="d-inline-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#10b981;display:inline-block;margin-right:2px;"></span>Selesai (O)</span>
+                                            <span class="badge bg-success-subtle text-success border border-success-subtle">{{ analytics.summary.ok }}</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center justify-content-between py-1.5"
+                                            data-mode="X" onclick="changeMainDonutMode('X', this)">
+                                            <span class="d-inline-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#f59e0b;display:inline-block;margin-right:2px;"></span>Belum (X)</span>
+                                            <span class="badge bg-warning-subtle text-dark border border-warning-subtle">{{ analytics.summary.on_progress }}</span>
+                                        </button>
+                                    </li>
+                                    <li>
+                                        <button type="button" class="dropdown-item d-flex align-items-center justify-content-between py-1.5"
+                                            data-mode="OVERDUE" onclick="changeMainDonutMode('OVERDUE', this)">
+                                            <span class="d-inline-flex align-items-center gap-2"><span style="width:8px;height:8px;border-radius:50%;background:#ef4444;display:inline-block;margin-right:2px;"></span>Overdue</span>
+                                            <span class="badge bg-danger-subtle text-danger border border-danger-subtle">{{ analytics.summary.overdue }}</span>
+                                        </button>
+                                    </li>
+                                </ul>
+                            </div>
                         </div>
                         <div class="analytics-card-body d-flex flex-column align-items-center justify-content-center">
                             <canvas id="mainStatusDonutChart" height="175"></canvas>
@@ -487,7 +516,7 @@
                         <th style="min-width: 155px;">Realisasi (Fix)</th>
                         <th style="width: 75px;">PIC</th>
                         <th style="width: 56px;">Judg</th>
-                        <th style="width: 215px; min-width: 215px;">Aksi</th>
+                        <th style="width: 112px; min-width: 112px;">Aksi</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -584,39 +613,36 @@
                             {% endif %}
                         </td>
 
-                        <!-- Actions (Icon + Label Keterangan) -->
+                        <!-- Actions (Icon Only) -->
                         <td class="text-center text-nowrap">
                             <div class="d-inline-flex align-items-center gap-1">
                                 <a href="{{ url_for('detail_finding', finding_id=item.id) }}"
                                     class="btn btn-sm btn-outline-secondary btn-aksi"
                                     title="Lihat Detail & Lembar Verifikasi">
-                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                                     </svg>
-                                    <span>Detail</span>
                                 </a>
                                 <a href="{{ url_for('edit_finding', finding_id=item.id) }}"
                                     class="btn btn-sm btn-outline-primary btn-aksi"
                                     title="Edit / Update Perbaikan">
-                                    <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                         <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                             d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
                                     </svg>
-                                    <span>Edit</span>
                                 </a>
                                 <form action="{{ url_for('delete_finding', finding_id=item.id) }}" method="POST"
                                     class="d-inline">
                                     <button type="button" class="btn btn-sm btn-outline-danger btn-aksi"
                                         title="Hapus Data" onclick="confirmDelete(event, this.closest('form'))">
-                                        <svg width="13" height="13" fill="none" stroke="currentColor"
+                                        <svg width="15" height="15" fill="none" stroke="currentColor"
                                             viewBox="0 0 24 24">
                                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                                 d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                                         </svg>
-                                        <span>Hapus</span>
                                     </button>
                                 </form>
                             </div>
@@ -718,38 +744,33 @@
                 </div>
 
                 <!-- Card Footer -->
-                <div class="card-footer bg-light py-2 px-3 d-flex justify-content-between align-items-center">
+                <div class="card-footer bg-light py-2 px-3 d-flex justify-content-end align-items-center gap-1">
                     <a href="{{ url_for('detail_finding', finding_id=item.id) }}"
-                        class="btn btn-sm btn-outline-secondary btn-aksi" title="Lembar Verifikasi">
-                        <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        class="btn btn-sm btn-outline-secondary btn-aksi" title="Lihat Detail & Lembar Verifikasi">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
                         </svg>
-                        <span>Detail</span>
                     </a>
-                    <div class="d-flex align-items-center gap-1">
-                        <a href="{{ url_for('edit_finding', finding_id=item.id) }}"
-                            class="btn btn-sm btn-outline-primary btn-aksi" title="Edit / Update">
-                            <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ url_for('edit_finding', finding_id=item.id) }}"
+                        class="btn btn-sm btn-outline-primary btn-aksi" title="Edit / Update">
+                        <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                        </svg>
+                    </a>
+                    <form action="{{ url_for('delete_finding', finding_id=item.id) }}" method="POST"
+                        class="d-inline">
+                        <button type="button" class="btn btn-sm btn-outline-danger btn-aksi"
+                            title="Hapus" onclick="confirmDelete(event, this.closest('form'))">
+                            <svg width="15" height="15" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                    d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
                             </svg>
-                            <span>Edit</span>
-                        </a>
-                        <form action="{{ url_for('delete_finding', finding_id=item.id) }}" method="POST"
-                            class="d-inline">
-                            <button type="button" class="btn btn-sm btn-outline-danger btn-aksi"
-                                title="Hapus" onclick="confirmDelete(event, this.closest('form'))">
-                                <svg width="13" height="13" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
-                                        d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
-                                </svg>
-                                <span>Hapus</span>
-                            </button>
-                        </form>
-                    </div>
+                        </button>
+                    </form>
                 </div>
             </div>
         </div>
@@ -805,11 +826,20 @@
         }
     }
 
-    function changeMainDonutMode(selectedMode) {
+    let currentMainDonutMode = 'ALL';
+
+    function changeMainDonutMode(selectedMode, btnEl) {
+        currentMainDonutMode = selectedMode || 'ALL';
+        const menu = document.getElementById('mainDonutMenu');
+        if (menu) {
+            menu.querySelectorAll('.dropdown-item').forEach(el => {
+                el.classList.toggle('active', el.getAttribute('data-mode') === currentMainDonutMode);
+            });
+        }
         if (!window.GenbaCharts || !analyticsPayload) return;
         GenbaCharts.renderStatusDonut('mainStatusDonutChart', analyticsPayload.summary, {
             height: 170,
-            mode: selectedMode
+            mode: currentMainDonutMode
         });
     }
 
@@ -827,14 +857,12 @@
 
     function initMainDashboardCharts() {
         if (!window.GenbaCharts || !analyticsPayload) return;
-        const modeSel = document.getElementById('mainDonutDropdown');
-        const currentMode = modeSel ? modeSel.value : 'ALL';
         GenbaCharts.renderLineBarChart('mainLineBarChart', analyticsPayload.lines, {
             height: 205
         });
         GenbaCharts.renderStatusDonut('mainStatusDonutChart', analyticsPayload.summary, {
             height: 170,
-            mode: currentMode
+            mode: currentMainDonutMode
         });
     }
 

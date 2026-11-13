@@ -44,23 +44,21 @@ svg {
   max-width: none;
 }
 
-/* Action Column Buttons with Icon + Label */
+/* Action Column Buttons (Icon Only) */
 .btn-aksi {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 4px 8px !important;
-  font-size: 0.7rem !important;
-  font-weight: 600 !important;
-  border-radius: 5px;
-  white-space: nowrap;
-  line-height: 1.2;
+  width: 30px;
+  height: 28px;
+  padding: 0 !important;
+  border-radius: 6px;
+  line-height: 1;
 }
 
 .btn-aksi svg {
-  width: 13px !important;
-  height: 13px !important;
+  width: 15px !important;
+  height: 15px !important;
   flex-shrink: 0;
 }
 
@@ -172,7 +170,7 @@ svg.icon-sm {
   border: 1px solid var(--fuji-border);
   border-radius: 10px;
   box-shadow: var(--fuji-card-shadow);
-  overflow: hidden;
+  overflow: visible;
   height: 100%;
 }
 
@@ -180,6 +178,7 @@ svg.icon-sm {
   padding: 0.7rem 1rem;
   background: #ffffff;
   border-bottom: 1px solid #f1f5f9;
+  border-radius: 10px 10px 0 0;
   display: flex;
   align-items: center;
   justify-content: space-between;
