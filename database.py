@@ -90,8 +90,7 @@ def dict_cursor(conn):
 def init_db():
     """
     Ensure the MySQL database, `findings` table, and `uploaded_photos` table exist.
-    Works on both local XAMPP (where root can CREATE DATABASE) and Cloud MySQL on Render
-    (where the database is pre-created by the provider).
+    Works on both local XAMPP and Cloud MySQL (TiDB Cloud).
     """
     current_cfg = _build_db_config()
     db_name = current_cfg['database']
@@ -99,12 +98,11 @@ def init_db():
     conn = None
     cursor = None
     try:
-        # Attempt 1: Connect directly to the target database (works on Cloud MySQL & existing local DB)
         try:
             conn = mysql.connector.connect(**current_cfg)
             cursor = conn.cursor()
-        except Error:
-            # Attempt 2: Connect without database name and create it (works on fresh local XAMPP)
+        except Error as err:
+            # If database doesn't exist, try connecting without DB name and create it
             config_no_db = {
                 k: v for k, v in current_cfg.items()
                 if k not in ('database', 'charset', 'collation', 'autocommit')
@@ -118,47 +116,52 @@ def init_db():
             conn.commit()
             cursor.execute(f"USE `{db_name}`")
 
-        # 1. Check if `findings` table already exists
-        cursor.execute(
-            """
-            SELECT COUNT(*) FROM INFORMATION_SCHEMA.TABLES
-            WHERE TABLE_SCHEMA = %s AND TABLE_NAME = 'findings'
-            """,
-            (db_name,)
-        )
-        table_exists = cursor.fetchone()[0] > 0
+        # Create findings table directly with IF NOT EXISTS
+        cursor.execute("""
+            CREATE TABLE IF NOT EXISTS `findings` (
+                `id` INT UNSIGNED AUTO_INCREMENT PRIMARY KEY,
+                `tanggal` VARCHAR(20) NOT NULL DEFAULT '',
+                `line` VARCHAR(20) NOT NULL DEFAULT '',
+                `pos` VARCHAR(100) NOT NULL DEFAULT '',
+                `temuan` TEXT NOT NULL,
+                `potensi` TEXT NULL,
+                `perbaikan` TEXT NULL,
+                `dudate` VARCHAR(20) NOT NULL DEFAULT '',
+                `fix_date` TEXT NULL,
+                `pic` VARCHAR(100) NOT NULL DEFAULT '',
+                `judg` VARCHAR(20) NOT NULL DEFAULT 'X',
+                `foto_sebelum` VARCHAR(255) NOT NULL DEFAULT '',
+                `foto_sesudah` VARCHAR(255) NOT NULL DEFAULT '',
+                `foto_fix` VARCHAR(255) NOT NULL DEFAULT '',
+                `created_at` TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+                INDEX idx_tanggal (`tanggal`),
+                INDEX idx_line (`line`),
+                INDEX idx_pic (`pic`),
+                INDEX idx_judg (`judg`)
+            ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_unicode_ci
+        """)
+        conn.commit()
 
-        if not table_exists and os.path.isfile(SQL_SCHEMA_PATH):
-            with open(SQL_SCHEMA_PATH, 'r', encoding='utf-8') as f:
-                sql_script = f.read()
-
-            cleaned_lines = []
-            for line in sql_script.splitlines():
-                stripped = line.strip()
-                if stripped.startswith('--'):
-                    continue
-                # Skip CREATE DATABASE / USE statements so Cloud MySQL with custom DB_NAME won't fail
-                if stripped.upper().startswith('CREATE DATABASE') or stripped.upper().startswith('USE '):
-                    continue
-                cleaned_lines.append(line)
-
-            for statement in '\n'.join(cleaned_lines).split(';'):
-                stmt = statement.strip()
-                if stmt:
-                    cursor.execute(stmt)
-            conn.commit()
-        else:
-            # Ensure foto_fix column exists for older installations
-            cursor.execute(
-                """
-                SELECT COLUMN_NAME FROM INFORMATION_SCHEMA.COLUMNS
-                WHERE TABLE_SCHEMA = %s AND TABLE_NAME = 'findings' AND COLUMN_NAME = 'foto_fix'
-                """,
-                (db_name,)
-            )
-            if not cursor.fetchone():
-                cursor.execute("ALTER TABLE `findings` ADD COLUMN foto_fix VARCHAR(255) NOT NULL DEFAULT ''")
+        # Seed data if empty
+        cursor.execute("SELECT COUNT(*) FROM `findings`")
+        if cursor.fetchone()[0] == 0 and os.path.isfile(SQL_SCHEMA_PATH):
+            try:
+                with open(SQL_SCHEMA_PATH, 'r', encoding='utf-8') as f:
+                    sql_script = f.read()
+                cleaned_lines = []
+                for line in sql_script.splitlines():
+                    stripped = line.strip()
+                    if stripped.startswith('--') or stripped.upper().startswith('CREATE DATABASE') or stripped.upper().startswith('USE ') or stripped.upper().startswith('DROP TABLE'):
+                        continue
+                    cleaned_lines.append(line)
+                for statement in '\n'.join(cleaned_lines).split(';'):
+                    stmt = statement.strip()
+                    if stmt and stmt.upper().startswith('INSERT'):
+                        cursor.execute(stmt)
                 conn.commit()
+            except Exception as seed_err:
+                print(f"Warning: Seed data failed: {seed_err}")
+                conn.rollback()
 
         # 2. Ensure `uploaded_photos` table exists for persistent cloud image storage (Render/Cloud safe)
         cursor.execute(
