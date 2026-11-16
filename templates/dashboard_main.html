@@ -295,7 +295,7 @@
                 <div class="col-6 col-md-2">
                     <label class="form-label mb-1 text-muted fw-bold d-block"
                         style="font-size: 0.6875rem;">PERIODE TEMUAN</label>
-                    <select name="period_type" id="periodTypeSelect" onchange="this.form.submit()"
+                    <select name="period_type" id="periodTypeSelect" onchange="const pv=this.form.querySelector('[name=period_val]'); if(pv) pv.value=''; this.form.submit()"
                         class="form-select form-select-sm fw-bold border-primary text-primary">
                         <option value="month" {% if period_type=='month' %}selected{% endif %}>Perbulan
                             (Bulanan)</option>
@@ -437,13 +437,7 @@
                         </a>
                         {% endif %}
 
-                        {% if line_filter != 'ALL' or status_filter != 'ALL' or pic_filter != 'ALL' or
-                        search_query or period_type != 'month' %}
-                        <a href="{{ url_for('index', period_type='month', view=view_mode) }}"
-                            class="text-danger text-decoration-none fw-bold ms-1" style="font-size: 0.73rem;">
-                            Reset Semua
-                        </a>
-                        {% endif %}
+
                     </div>
 
                     <div class="d-flex align-items-center gap-2">

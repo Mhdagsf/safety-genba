@@ -45,7 +45,7 @@
                 <div class="col-6 col-md-3">
                     <label class="form-label mb-1 text-muted fw-bold" style="font-size: 0.6875rem;">CAKUPAN
                         PERIODE</label>
-                    <select name="period_type" onchange="this.form.submit()"
+                    <select name="period_type" onchange="const pv=this.form.querySelector('[name=period_val]'); if(pv) pv.value=''; this.form.submit()"
                         class="form-select form-select-sm fw-bold border-primary text-primary">
                         <option value="all" {% if period_type=='all' %}selected{% endif %}>Semua Periode (Keseluruhan)
                         </option>

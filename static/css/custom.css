@@ -116,6 +116,32 @@ svg.icon-sm {
   padding: 0.55rem 1rem;
 }
 
+/* Unified Header Navbar Action Buttons */
+.fuji-nav-btn {
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  gap: 7px !important;
+  height: 34px;
+  padding: 0 12px !important;
+  font-size: 0.76rem !important;
+  font-weight: 600 !important;
+  line-height: 1 !important;
+  border-radius: 6px !important;
+  white-space: nowrap;
+}
+
+.fuji-nav-btn svg {
+  width: 15px !important;
+  height: 15px !important;
+  flex-shrink: 0;
+}
+
+.fuji-nav-btn.dropdown-toggle::after {
+  margin-left: 2px;
+  vertical-align: middle;
+}
+
 .nav-btn-dashboard {
   background-color: rgba(255, 255, 255, 0.08);
   color: #f8fafc;

@@ -5,7 +5,7 @@ import re
 import mimetypes
 from datetime import datetime
 from PIL import Image as PILImage
-from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory, abort
+from flask import Flask, render_template, request, redirect, url_for, send_file, flash, send_from_directory, abort, session
 from werkzeug.utils import secure_filename
 
 import database
@@ -111,30 +111,61 @@ LINE_POS_MAP = {
 }
 
 
+def _get_saved_filter_kwargs():
+    """Return saved filter parameters from session so user stays in their chosen period."""
+    saved = session.get('genba_filters', {})
+    return {
+        'period_type': saved.get('period_type', 'month'),
+        'period_val': saved.get('period_val', ''),
+        'line': saved.get('line', 'ALL'),
+        'status': saved.get('status', 'ALL'),
+        'pic': saved.get('pic', 'ALL'),
+        'q': saved.get('q', ''),
+        'view': saved.get('view', 'table')
+    }
+
+
 @app.route('/')
 def index():
-    line_filter = request.args.get('line', 'ALL')
-    status_filter = request.args.get('status', 'ALL')
-    pic_filter = request.args.get('pic', 'ALL')
-    search_query = request.args.get('q', '').strip()
-    view_mode = request.args.get('view', 'table')  # 'table' or 'card'
+    saved = session.get('genba_filters', {})
 
-    period_type = request.args.get('period_type', 'month')
+    line_filter = request.args.get('line', saved.get('line', 'ALL'))
+    status_filter = request.args.get('status', saved.get('status', 'ALL'))
+    pic_filter = request.args.get('pic', saved.get('pic', 'ALL'))
+    search_query = request.args.get('q', saved.get('q', '')).strip()
+    view_mode = request.args.get('view', saved.get('view', 'table'))
+
+    period_type = request.args.get('period_type', saved.get('period_type', 'month'))
 
     available_periods = database.get_available_periods()
     all_pics = database.get_distinct_pics(PICS)
 
     default_month = available_periods['months'][0] if available_periods['months'] else datetime.now().strftime('%Y-%m')
     default_year = available_periods['years'][0] if available_periods['years'] else datetime.now().strftime('%Y')
+    default_week = datetime.now().strftime('%Y-%m-%d')
+
+    raw_period_val = request.args.get('period_val', saved.get('period_val', ''))
 
     if period_type == 'month':
-        period_val = request.args.get('period_val', default_month)
+        period_val = raw_period_val if (raw_period_val and len(raw_period_val) == 7 and '-' in raw_period_val) else default_month
     elif period_type == 'year':
-        period_val = request.args.get('period_val', default_year)
+        period_val = raw_period_val if (raw_period_val and len(raw_period_val) == 4 and raw_period_val.isdigit()) else default_year
     elif period_type == 'week':
-        period_val = request.args.get('period_val', datetime.now().strftime('%Y-%m-%d'))
+        period_val = raw_period_val if (raw_period_val and len(raw_period_val) == 10 and raw_period_val.count('-') == 2) else default_week
     else:
-        period_val = request.args.get('period_val', '')
+        period_type = 'all'
+        period_val = ''
+
+    # Persist current filter state in session so Detail, Edit, and Delete keep the same period
+    session['genba_filters'] = {
+        'period_type': period_type,
+        'period_val': period_val,
+        'line': line_filter,
+        'status': status_filter,
+        'pic': pic_filter,
+        'q': search_query,
+        'view': view_mode
+    }
 
     findings = database.get_all_findings(line_filter, status_filter, search_query, period_type, period_val, pic_filter)
     stats = database.get_statistics(line_filter, status_filter, search_query, period_type, period_val, pic_filter)
@@ -184,14 +215,15 @@ def analytics_dashboard():
     default_month = available_periods['months'][0] if available_periods['months'] else datetime.now().strftime('%Y-%m')
     default_year = available_periods['years'][0] if available_periods['years'] else datetime.now().strftime('%Y')
 
+    raw_pval = request.args.get('period_val', '')
     if period_type == 'month':
-        period_val = request.args.get('period_val', default_month)
+        period_val = raw_pval if (raw_pval and len(raw_pval) == 7 and '-' in raw_pval) else default_month
     elif period_type == 'year':
-        period_val = request.args.get('period_val', default_year)
+        period_val = raw_pval if (raw_pval and len(raw_pval) == 4 and raw_pval.isdigit()) else default_year
     elif period_type == 'week':
-        period_val = request.args.get('period_val', datetime.now().strftime('%Y-%m-%d'))
+        period_val = raw_pval if (raw_pval and len(raw_pval) == 10 and raw_pval.count('-') == 2) else datetime.now().strftime('%Y-%m-%d')
     else:
-        period_val = request.args.get('period_val', '')
+        period_val = ''
 
     findings = database.get_all_findings(line_filter, 'ALL', '', period_type, period_val, pic_filter)
     analytics = database.compute_analytics_data(findings, LINES)
@@ -282,8 +314,9 @@ def input_finding():
             'foto_fix': foto_fix_name
         })
 
-        flash(f'Temuan safety berhasil disimpan! (ID #{new_id})', 'success')
-        return redirect(url_for('index'))
+        session.pop('_flashes', None)
+        flash('Temuan safety berhasil disimpan!', 'success')
+        return redirect(url_for('index', **_get_saved_filter_kwargs()))
 
     today_str = datetime.now().strftime('%Y-%m-%d')
     all_pics = database.get_distinct_pics(PICS)
@@ -365,8 +398,9 @@ def edit_finding(finding_id):
             'clear_foto_fix': clear_foto_fix
         })
 
-        flash(f'Data temuan #{finding_id} berhasil diperbarui!', 'success')
-        return redirect(url_for('index'))
+        session.pop('_flashes', None)
+        flash('Data temuan berhasil diperbarui!', 'success')
+        return redirect(url_for('index', **_get_saved_filter_kwargs()))
 
     all_pics = database.get_distinct_pics(PICS)
     return render_template('edit.html', finding=finding, lines=LINES, pics=all_pics, line_pos_map=LINE_POS_MAP)
@@ -389,8 +423,9 @@ def delete_finding(finding_id):
         remove_uploaded_file_safely(finding.get('foto_sesudah'))
         remove_uploaded_file_safely(finding.get('foto_fix'))
     database.delete_finding(finding_id)
-    flash(f'Temuan #{finding_id} telah dihapus.', 'info')
-    return redirect(url_for('index'))
+    session.pop('_flashes', None)
+    flash('Temuan telah dihapus.', 'info')
+    return redirect(url_for('index', **_get_saved_filter_kwargs()))
 
 
 @app.route('/export-excel')
